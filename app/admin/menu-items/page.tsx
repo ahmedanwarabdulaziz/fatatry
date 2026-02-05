@@ -137,10 +137,19 @@ export default function MenuItemsPage() {
             formData.append('addons', JSON.stringify([]));
         }
 
+        // Save scroll position before refresh
+        const scrollY = window.scrollY;
+
         await saveMenuItem(formData);
         await fetchData();
+
         setSaving(false);
         handleClose();
+
+        // Restore scroll position after DOM updates
+        setTimeout(() => {
+            window.scrollTo(0, scrollY);
+        }, 100);
     };
 
     const handleDelete = async (id: string) => {

@@ -90,7 +90,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                 <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
                     <div>
                         <div className="flex justify-between items-start gap-2">
-                            <h3 className="text-white font-bold text-lg leading-tight truncate">
+                            <h3 className="text-white font-bold text-lg leading-tight">
                                 {item.name}
                             </h3>
                             {/* Show base price or 'start from' if variations exist */}
@@ -102,7 +102,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                                 </span>
                             </div>
                         </div>
-                        <p className="text-gray-400 text-xs mt-1 line-clamp-2 leading-relaxed">
+                        <p className="text-gray-400 text-xs mt-1 leading-relaxed">
                             {item.description || "Authentic Egyptian delicacy prepared with premium ingredients."}
                         </p>
 

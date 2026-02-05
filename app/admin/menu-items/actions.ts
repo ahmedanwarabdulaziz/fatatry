@@ -123,10 +123,6 @@ export async function saveMenuItem(formData: FormData) {
         (data.servingDetails as any)[key] === undefined && delete (data.servingDetails as any)[key]
     );
 
-    // Clean empty lists
-    if (data.sizes && data.sizes.length === 0) delete data.sizes;
-    if (data.addons && data.addons.length === 0) delete data.addons;
-
     if (id) {
         await adminDb.collection(COLLECTION).doc(id).update(data);
     } else {

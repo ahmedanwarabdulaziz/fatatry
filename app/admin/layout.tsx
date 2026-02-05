@@ -3,6 +3,7 @@ import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CategoryIcon from '@mui/icons-material/Category';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu'; // Alternative to MenuBook
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import SettingsIcon from '@mui/icons-material/Settings'; // More standard than SettingsSuggest
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -12,6 +13,7 @@ const menuItems = [
     { text: 'Dashboard', icon: <DashboardIcon />, path: '/admin/dashboard' },
     { text: 'Categories', icon: <CategoryIcon />, path: '/admin/categories' },
     { text: 'Menu Items', icon: <RestaurantMenuIcon />, path: '/admin/menu-items' },
+    { text: 'Special Offers', icon: <LocalOfferIcon />, path: '/admin/special-offers' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
 ];
 
