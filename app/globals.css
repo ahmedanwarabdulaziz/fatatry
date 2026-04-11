@@ -1,21 +1,31 @@
 @tailwind base;
-/* Force Rebuild */
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
-  --primary-gold: #D4AF37;
-  --primary-dark: #1A1A1A;
+@layer base {
+  :root {
+    --background: #121212;
+    --surface: #1E1E1E;
+    --surface-elevated: #2C2C2C;
+    --border: #333333;
+    
+    --text-main: #F3F4F6;
+    --text-muted: #9CA3AF;
+    
+    --accent-gold: #D4AF37;
+    --accent-gold-hover: #E5C158;
+    
+    --radius-card: 12px;
+    --radius-control: 8px;
+  }
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: #111;
-  /* Dark background for desktop view */
+  background-color: var(--background);
+  color: var(--text-main);
   overflow-x: hidden;
+  /* Keep native pull-to-refresh smooth but overscroll none keeps it contained */
+  overscroll-behavior-y: none;
 }
 
 /* Hide scrollbar for Chrome, Safari and Opera */
@@ -25,23 +35,21 @@ body {
 
 /* Hide scrollbar for IE, Edge and Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
 
-/* Glassmorphism Utilities */
+/* Standard glass effects (refactored to use new tokens) */
 .glass {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(30, 30, 30, 0.6);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
 }
 
 .glass-dark {
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(18, 18, 18, 0.8);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
 }

@@ -21,6 +21,7 @@ export default function MenuItemsPage() {
     const [open, setOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<Partial<MenuItem>>({});
     const [saving, setSaving] = useState(false);
+    const [filterCategory, setFilterCategory] = useState<string>('ALL');
 
     // DnD Sensors
     const sensors = useSensors(
@@ -177,13 +178,33 @@ export default function MenuItemsPage() {
 
     const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name;
 
+    const displayedItems = filterCategory === 'ALL' 
+        ? items 
+        : items.filter(i => i.categoryId === filterCategory);
+
     return (
         <Box>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h4">Menu Items</Typography>
-                <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
-                    Add Item
-                </Button>
+                <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FormControl size="small" sx={{ minWidth: 200 }}>
+                        <InputLabel sx={{ bgcolor: 'background.paper', px: 0.5, borderRadius: 1 }}>Filter by Category</InputLabel>
+                        <Select
+                            value={filterCategory}
+                            label="Filter by Category"
+                            onChange={(e) => setFilterCategory(e.target.value as string)}
+                            sx={{ bgcolor: 'background.paper' }}
+                        >
+                            <MuiMenuItem value="ALL">All Categories</MuiMenuItem>
+                            {categories.map((cat) => (
+                                <MuiMenuItem key={cat.id} value={cat.id}>{cat.name}</MuiMenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpen()}>
+                        Add Item
+                    </Button>
+                </Box>
             </Box>
 
             {loading ? (
@@ -204,8 +225,8 @@ export default function MenuItemsPage() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                <SortableContext items={items.map(c => c.id)} strategy={verticalListSortingStrategy}>
-                                    {items.map((row) => (
+                                <SortableContext items={displayedItems.map(c => c.id)} strategy={verticalListSortingStrategy}>
+                                    {displayedItems.map((row) => (
                                         <MenuItemRow
                                             key={row.id}
                                             item={row}
@@ -215,7 +236,7 @@ export default function MenuItemsPage() {
                                         />
                                     ))}
                                 </SortableContext>
-                                {items.length === 0 && (
+                                {displayedItems.length === 0 && (
                                     <TableRow>
                                         <TableCell colSpan={7} align="center">No items found</TableCell>
                                     </TableRow>

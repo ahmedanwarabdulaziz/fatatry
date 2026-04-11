@@ -1,0 +1,269 @@
+Customer-Facing Menu Redesign Plan
+
+Goal
+Redesign the public customer experience into a professional, mobile-first restaurant QR menu. Customers should immediately see food, categories, search, prices, and offers with minimal friction.
+
+Keep the existing Next.js app, admin system, Firebase data structure, and upload flow unless a change is required for the customer experience. Focus primarily on:
+- app/page.tsx
+- app/menu/MenuClient.tsx
+- app/menu/page.tsx
+- app/layout.tsx
+- app/globals.css
+- components/MobileContainer.tsx
+
+Implementation Priority
+- Core first: typography, design tokens, /menu layout, visible search, sticky category tabs, readable cards, consistent pricing, and mobile QA.
+- Enhancement second: debounced or deferred search, touch micro-interactions, PWA metadata, and image optimization.
+- Premium polish after layout is stable: scrollspy category highlighting and JSON-LD structured data.
+
+Phase 1: Product Direction And Visual Standard [DONE]
+
+Objective
+Set a clear professional direction before editing components.
+
+Instructions
+- Treat /menu as the primary customer QR-code destination.
+- Build for mobile first, then make sure desktop still looks clean.
+- Prioritize speed, readability, and food discovery over cinematic presentation.
+- Keep a premium restaurant feel, but reduce heavy glass effects and visual clutter.
+- Add a modern, clean sans-serif font through next/font in app/layout.tsx.
+- Preferred English fonts: Plus Jakarta Sans, Inter, or Outfit.
+- If Arabic support is expected soon, plan for Cairo, Tajawal, or Noto Sans Arabic.
+- Do not rely on browser default typography.
+- Define customer-facing design tokens in app/globals.css or tailwind.config.js.
+- Include tokens for background, surface, elevated surface, border, muted text, main text, accent gold, active state, card radius, control radius, shadow, and standard spacing.
+- Use CSS variables where practical so the brand style can be tuned from one place.
+- Use real food imagery as the main visual appeal instead of decorative gradients.
+- Use one warm accent color, preferably amber or gold, only for prices, active states, highlights, and key actions.
+- Avoid tiny text, excessive blur, nested cards, oversized decorative effects, and complicated card layouts.
+- Use clear, consistent spacing and strong contrast.
+- Keep tap targets at least 44px high.
+- Use readable text sizes: body copy around 13px to 15px minimum.
+- Use consistent border radius, preferably 8px to 12px for cards and controls.
+- Use consistent currency formatting everywhere, preferably EGP 120 or 120 EGP.
+- Remove all corrupted symbols, placeholder copy, and temporary customer-facing text.
+
+Deliverables
+- A small customer-facing design system using existing Tailwind/CSS patterns.
+- Clear rules for backgrounds, cards, category tabs, buttons, prices, empty states, and text hierarchy.
+- Font setup in app/layout.tsx using next/font.
+- Design tokens in globals.css or Tailwind config.
+
+Acceptance Criteria
+- The design feels like a real restaurant menu, not a prototype.
+- The first screen is useful immediately on a phone.
+- Text is readable on small mobile screens.
+- Important actions are obvious without explanation.
+- Typography is consistent across the public customer pages.
+- Colors, radius, spacing, and shadows come from shared tokens instead of one-off values.
+
+Phase 2: Make /menu The Main Customer Experience [DONE]
+
+Objective
+Redesign app/menu/MenuClient.tsx so customers can browse the menu immediately.
+
+Required Layout
+- Sticky top header with logo or restaurant name.
+- Search input directly under the header.
+- Horizontal sticky category tabs visible by default.
+- All tab at the beginning of the category list.
+- Offers or featured items near the top if available.
+- Menu items grouped by category.
+- Clear empty states for no items and no search results.
+
+Instructions
+- Remove the collapsed category dropdown as the main navigation.
+- Replace it with horizontally scrollable category tabs.
+- Keep the active category visually obvious.
+- Use the existing searchTerm state, but add a real search input.
+- Search should match item names and preferably descriptions.
+- When searching, show matching items clearly across categories.
+- Add a clear search button only if useful; otherwise update results as the user types.
+- Use debounced search or React useDeferredValue so typing stays smooth.
+- Recommended debounce delay: around 250ms to 300ms if using a manual debounce.
+- Do not add network requests for search unless the menu becomes too large for local filtering.
+- Add a "Clear search" action when no results are found.
+- Fix corrupted characters currently used for the dropdown arrow and empty-state emoji.
+- Avoid hover-only interactions because customers mostly use touch devices.
+- Keep sticky elements compact so they do not consume too much vertical space.
+- Premium enhancement: add scrollspy category highlighting after the menu section layout is stable.
+- Use IntersectionObserver to update the active category tab while the user scrolls.
+- When a user taps a category, scroll smoothly to that section and keep the active state in sync.
+- Disable or simplify scrollspy behavior while search is active, because search results may not follow full category sections.
+
+Acceptance Criteria
+- A customer can open /menu, search, switch categories, and read prices within 5 seconds.
+- Category navigation remains accessible while scrolling.
+- Search is visible and usable.
+- No content is clipped on small phones.
+- Empty states are clean and professional.
+- Typing in search does not cause visible lag.
+- If scrollspy is implemented, the active tab matches the section currently in view.
+
+Phase 3: Redesign Menu Item Cards [DONE]
+
+Objective
+Make each item card easy to scan while still supporting images, sizes, serving details, and add-ons.
+
+Recommended Card Structure
+- Left side: stable square food image.
+- Right side: item name, short description, and main price.
+- Bottom area: optional badges for weight, pieces, or skewers.
+- For items with sizes, show "From EGP X" on the main card.
+- Show size prices in a clean compact list or expandable area.
+- Show add-ons as secondary information under "Extras" without crowding the card.
+
+Instructions
+- Replace the dense 3-column size grid if it becomes too hard to read.
+- Use a tasteful image placeholder when an item has no image.
+- Do not display "No Image" as customer-facing text.
+- Avoid image hover zoom on mobile-first cards.
+- Add touch-friendly active states to tappable cards, category tabs, and buttons.
+- Recommended effect: active:scale-[0.98] or active:scale-95 with a fast transition.
+- Keep micro-animations subtle and functional; they should make the interface feel responsive under the finger.
+- Keep price highly visible and consistently formatted.
+- Keep long item names from breaking the layout.
+- Avoid generic repeated fallback descriptions such as "Authentic Egyptian delicacy prepared with premium ingredients."
+- If no real description exists, either hide the description line or show a short category-relevant fallback only if approved.
+- Keep cards visually calm: subtle background, light border, readable text, limited effects.
+
+Acceptance Criteria
+- Item names and prices are readable at a glance.
+- Cards remain stable with long names, no images, many sizes, and add-ons.
+- Price and currency are consistent.
+- No card feels crowded on mobile.
+- Taps on cards, tabs, and buttons have immediate visual feedback.
+- Animations do not delay browsing or make scrolling feel heavy.
+
+Phase 4: Improve Entry Page / [DONE]
+
+Objective
+Make the homepage support the QR menu flow instead of slowing it down.
+
+Preferred Direction
+- QR codes should point directly to /menu.
+- If / remains public, make it a lightweight brand entry with immediate menu access.
+
+Instructions
+- Do not use a fixed h-screen layout when offers are present; use min-h-screen and allow scrolling.
+- Replace dollar pricing with the real currency.
+- Keep copy short, brand-specific, and useful.
+- Make offers visually connected to the menu.
+- Keep the primary "View Menu" action immediately visible.
+- Consider redirecting / to /menu if the restaurant wants the fastest QR experience.
+- If a cinematic welcome screen remains, make sure it does not block customers from quickly seeing the menu.
+
+Acceptance Criteria
+- The homepage does not cut off content on small phones.
+- Customers can reach the menu immediately.
+- The homepage feels like a restaurant entry point, not a marketing page.
+
+Phase 5: Brand, Metadata, And Content Polish [DONE]
+
+Objective
+Make the public site feel finished and trustworthy.
+
+Instructions
+- Update app/layout.tsx metadata with the real restaurant name and description.
+- Replace "Restaurant Menu" with the real brand name.
+- Add favicon and app icons if assets are available.
+- Add theme-color metadata so the mobile browser top bar matches the restaurant theme.
+- Add a public manifest.json for basic PWA/app-like behavior.
+- Include app name, short name, icons, start_url, display mode, background color, and theme color in the manifest.
+- Set the page language intentionally. Use English for now unless Arabic support is required.
+- Prepare layout decisions for future Arabic support if needed.
+- Use consistent naming: Elfatatry, menu, offers, categories, and item labels.
+- Ensure all prices use the same currency format.
+- Remove temporary comments and placeholder code from customer-facing files.
+- Replace generic product copy with real restaurant copy.
+- Avoid self-referential UI text that describes the page instead of helping the customer.
+- Premium enhancement: add JSON-LD structured data when real restaurant details are available.
+- Use Schema.org Restaurant data for name, logo, menu URL, cuisine, phone, address, opening hours, and price range.
+- Add Menu/MenuSection data only if it can be generated accurately from the available menu data.
+- Do not invent business details for structured data.
+
+Acceptance Criteria
+- Browser title and shared links look professional.
+- Customer-facing text is brand-specific and polished.
+- No corrupted characters, temporary copy, or placeholder descriptions remain.
+- Mobile browser theme color matches the visual direction.
+- PWA manifest is valid if added.
+- JSON-LD contains only accurate restaurant information if added.
+
+Phase 6: Performance And Image Standards [DONE]
+
+Objective
+Make the menu fast and reliable on restaurant Wi-Fi and mobile data.
+
+Instructions
+- Compress public/images/general/BG.png and public/images/general/Home.png.
+- Convert large static images to WebP or AVIF where practical.
+- Keep original source assets only if needed; serve optimized assets in the UI.
+- Use Next Image with appropriate sizes values.
+- Do not load heavy background images before critical menu content if they are not necessary.
+- Make sure uploaded Cloudflare R2 images always resolve to a public URL.
+- Ensure NEXT_PUBLIC_R2_DOMAIN or equivalent public asset domain is configured.
+- Add simple skeleton or loading states for menu content.
+- Avoid heavy animation delays in long menu lists.
+- Keep animation durations short, especially for cards in long lists.
+- Avoid staggered entrance delays for every item in large categories.
+- Ensure debounced or deferred search still feels instant to the customer.
+- Keep scrolling smooth on mobile.
+
+Acceptance Criteria
+- First screen appears quickly.
+- Menu remains readable while images load.
+- No uploaded item images are broken.
+- Static assets are not unnecessarily large.
+- Scrolling is smooth on mobile.
+- Search and category switching stay responsive with a large menu.
+- PWA metadata and theme-color do not introduce broken icon or manifest requests.
+
+Phase 7: Customer QA Checklist [DONE]
+
+Objective
+Verify the redesigned menu behaves correctly in real customer scenarios.
+
+Test Viewports
+- iPhone SE size.
+- Modern iPhone size.
+- Medium Android size.
+- Desktop narrow browser.
+- Desktop wide browser.
+
+Test Data Scenarios
+- No categories.
+- No items.
+- Many categories.
+- Category with many items.
+- Item with no image.
+- Item with long name.
+- Item with no description.
+- Item with one price.
+- Item with multiple sizes.
+- Item with serving details.
+- Item with add-ons.
+- Search with results.
+- Search with no results.
+- Fast typing into search.
+- Clearing search after no results.
+- Tapping category tabs repeatedly.
+- Scrolling through categories with scrollspy enabled, if implemented.
+- Offers enabled.
+- Offers disabled.
+- Missing favicon or app icon assets.
+- Manifest present and valid, if implemented.
+- JSON-LD present and valid, if implemented.
+
+Technical Checks
+- Run: node_modules\.bin\tsc.cmd --noEmit --pretty false
+- Run: node_modules\.bin\eslint.cmd app components lib --ext .ts,.tsx --no-cache
+- Run: npm.cmd run build
+
+Notes
+- npm run lint may fail on this Windows machine because PowerShell script execution or the Next eslint cache can be blocked.
+- If npm run lint fails for that reason, use npm.cmd or the direct eslint command above.
+- Investigate any npm.cmd run build timeout before deployment.
+
+Final Target
+The finished customer-facing site should feel instant, readable, attractive, food-focused, and trustworthy. The main goal is not only to make the app prettier; it is to remove friction so every customer can scan the QR code, find food, read prices, and choose quickly from a phone.

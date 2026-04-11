@@ -6,6 +6,23 @@ module.exports = {
     ],
     theme: {
         extend: {
+            colors: {
+                background: "var(--background)",
+                surface: "var(--surface)",
+                "surface-elevated": "var(--surface-elevated)",
+                border: "var(--border)",
+                "main-text": "var(--text-main)",
+                "muted-text": "var(--text-muted)",
+                "accent-gold": "var(--accent-gold)",
+                "accent-gold-hover": "var(--accent-gold-hover)",
+            },
+            borderRadius: {
+                card: "var(--radius-card)",
+                control: "var(--radius-control)",
+            },
+            fontFamily: {
+                sans: ['var(--font-jakarta)', 'sans-serif'],
+            },
             animation: {
                 'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
                 'shimmer': 'shimmer 1.5s infinite',

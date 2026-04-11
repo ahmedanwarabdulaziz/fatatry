@@ -23,11 +23,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     // If we are on the login page, don't show the sidebar
     if (pathname === '/admin/login') {
-        return <>{children}</>;
+        return (
+            <Box sx={{ minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
+                <CssBaseline />
+                {children}
+            </Box>
+        );
     }
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default', color: 'text.primary' }}>
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>

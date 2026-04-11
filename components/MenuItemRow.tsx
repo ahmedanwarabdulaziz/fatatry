@@ -7,6 +7,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { MenuItem } from "@/app/admin/menu-items/actions";
+import Image from "next/image";
 
 interface MenuItemRowProps {
     item: MenuItem;
@@ -60,7 +61,17 @@ export function MenuItemRow({ item, categoryName, onEdit, onDelete }: MenuItemRo
             </TableCell>
             <TableCell>
                 <Box sx={{ display: 'flex', gap: 1 }}>
-                    {item.squareImage && <Avatar src={item.squareImage} variant="rounded" alt="Square" />}
+                    {item.squareImage && (
+                        <Box sx={{ width: 48, height: 48, position: 'relative', borderRadius: 1, overflow: 'hidden', bgcolor: 'grey.200' }}>
+                            <Image 
+                                src={item.squareImage} 
+                                alt={item.name} 
+                                fill 
+                                sizes="48px" 
+                                style={{ objectFit: 'cover' }}
+                            />
+                        </Box>
+                    )}
                 </Box>
             </TableCell>
             <TableCell component="th" scope="row">
