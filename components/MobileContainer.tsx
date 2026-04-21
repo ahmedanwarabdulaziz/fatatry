@@ -12,7 +12,7 @@ export default function MobileContainer({
     disablePadding = false
 }: MobileContainerProps) {
     return (
-        <div className="min-h-screen w-full flex justify-center bg-[#1a1a1a] overflow-hidden">
+        <div className="min-h-screen w-full flex justify-center bg-[#1a1a1a]">
             {/* Mobile Frame */}
             <div className={`
             w-full max-w-[480px] 

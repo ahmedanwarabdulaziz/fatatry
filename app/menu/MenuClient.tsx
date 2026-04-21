@@ -191,11 +191,11 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                         {item.addons && item.addons.length > 0 && (
                             <div className="mt-2 border-t border-border pt-2">
                                 <p className="text-[10px] uppercase tracking-wider text-accent-gold/80 font-bold mb-1">Extras</p>
-                                <div className="grid grid-cols-2 gap-1.5">
+                                <div className="flex flex-col gap-1.5">
                                     {item.addons.map((a, idx) => (
-                                        <div key={idx} className="flex justify-between items-center text-[10px] bg-surface px-2 py-1 rounded-sm border border-border">
-                                            <span className="text-muted-text truncate mr-2">{a.name}</span>
-                                            <span className="text-accent-gold font-medium whitespace-nowrap">+ ${a.price.toFixed(2)}</span>
+                                        <div key={idx} className="flex justify-between items-start text-[10px] bg-surface px-2 py-1 rounded-sm border border-border">
+                                            <span className="text-muted-text mr-2 leading-tight flex-1">{a.name}</span>
+                                            <span className="text-accent-gold font-medium whitespace-nowrap shrink-0 mt-0.5">+ ${a.price.toFixed(2)}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -232,7 +232,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
         <MobileContainer disablePadding>
             <main className="flex-1 w-full relative flex flex-col min-h-screen bg-background">
 
-                {/* 1. Header and Navigation - Sticky Top */}
+                {/* 1. Header and Navigation - Static in fixed-height layout */}
                 <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border shadow-sm">
                     <div className="px-4 pt-4 pb-3 flex flex-col gap-4">
                         {/* Top Bar */}
@@ -298,7 +298,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                 </div>
 
                 {/* 2. Menu Items List */}
-                <div className="px-4 pb-24 z-10 flex-1 overflow-y-auto w-full pt-4">
+                <div className="px-4 pb-24 z-10 flex-1 w-full pt-4">
                     <div className="space-y-4">
                         <AnimatePresence mode="wait">
                             {activeCategory === "ALL" ? (
