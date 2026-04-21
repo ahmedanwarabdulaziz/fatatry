@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useDeferredValue } from "react";
+import { useState, useDeferredValue, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MobileContainer from "@/components/MobileContainer";
@@ -40,6 +40,56 @@ interface MenuClientProps {
     categories: Category[];
     items: MenuItem[];
 }
+
+const ExpandableDescription = ({ text }: { text: string }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isTruncated, setIsTruncated] = useState(false);
+    const textRef = useRef<HTMLParagraphElement>(null);
+
+    useEffect(() => {
+        const checkTruncation = () => {
+            if (textRef.current && !isExpanded) {
+                // scrollHeight is the full uncut height. clientHeight is the rendered height.
+                // If scrollHeight is strictly greater than clientHeight, it means line-clamp is active.
+                setIsTruncated(textRef.current.scrollHeight > textRef.current.clientHeight + 2);
+            }
+        };
+
+        checkTruncation();
+        // Add a small delay for full paint
+        const timer = setTimeout(checkTruncation, 150);
+        window.addEventListener('resize', checkTruncation);
+        return () => {
+            clearTimeout(timer);
+            window.removeEventListener('resize', checkTruncation);
+        };
+    }, [text, isExpanded]);
+
+    return (
+        <motion.div layout className="mt-1.5 flex flex-col items-start w-full relative">
+            <motion.p 
+                layout="position"
+                ref={textRef} 
+                className={`text-muted-text text-xs leading-relaxed transition-all duration-300 w-full ${isExpanded ? '' : 'line-clamp-2'}`}
+            >
+                {text}
+            </motion.p>
+            {(isTruncated || isExpanded) && (
+                <motion.button 
+                    layout="position"
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsExpanded(!isExpanded);
+                    }}
+                    className="text-accent-gold text-[10px] font-medium mt-1 hover:underline active:scale-95 inline-block py-0.5"
+                >
+                    {isExpanded ? "Show less" : "Read more"}
+                </motion.button>
+            )}
+        </motion.div>
+    );
+};
 
 export default function MenuClient({ categories, items }: MenuClientProps) {
     const [activeCategory, setActiveCategory] = useState<string>("ALL");
@@ -112,9 +162,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                             </div>
                         </div>
                         {item.description && (
-                            <p className="text-muted-text text-xs mt-1.5 leading-relaxed line-clamp-2">
-                                {item.description}
-                            </p>
+                            <ExpandableDescription text={item.description} />
                         )}
 
                         {/* Professional Compact Variations Grid */}

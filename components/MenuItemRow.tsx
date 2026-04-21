@@ -6,6 +6,7 @@ import { TableRow, TableCell, IconButton, Avatar, Box, Typography, Chip } from "
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { MenuItem } from "@/app/admin/menu-items/actions";
 import Image from "next/image";
 
@@ -13,10 +14,11 @@ interface MenuItemRowProps {
     item: MenuItem;
     categoryName?: string;
     onEdit: (item: MenuItem) => void;
+    onDuplicate: (item: MenuItem) => void;
     onDelete: (id: string) => void;
 }
 
-export function MenuItemRow({ item, categoryName, onEdit, onDelete }: MenuItemRowProps) {
+export function MenuItemRow({ item, categoryName, onEdit, onDuplicate, onDelete }: MenuItemRowProps) {
     const {
         attributes,
         listeners,
@@ -96,10 +98,13 @@ export function MenuItemRow({ item, categoryName, onEdit, onDelete }: MenuItemRo
             </TableCell>
             <TableCell>{item.isFeatured ? <Chip label="Featured" color="primary" size="small" /> : null}</TableCell>
             <TableCell align="right">
-                <IconButton onClick={() => onEdit(item)} color="primary">
+                <IconButton onClick={() => onDuplicate(item)} color="default" title="Duplicate">
+                    <ContentCopyIcon />
+                </IconButton>
+                <IconButton onClick={() => onEdit(item)} color="primary" title="Edit">
                     <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => onDelete(item.id)} color="error">
+                <IconButton onClick={() => onDelete(item.id)} color="error" title="Delete">
                     <DeleteIcon />
                 </IconButton>
             </TableCell>

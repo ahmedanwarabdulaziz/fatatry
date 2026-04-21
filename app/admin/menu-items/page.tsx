@@ -67,6 +67,24 @@ export default function MenuItemsPage() {
         setHasSizes(false);
     };
 
+    const handleDuplicate = (item: MenuItem) => {
+        const itemHasSizes = !!(item.sizes && item.sizes.length > 0);
+        setHasSizes(itemHasSizes);
+        
+        // Deep copy the sizes and addons so they don't share references
+        const duplicateItem = { 
+            ...item,
+            sizes: item.sizes ? JSON.parse(JSON.stringify(item.sizes)) : [],
+            addons: item.addons ? JSON.parse(JSON.stringify(item.addons)) : []
+        };
+        
+        delete duplicateItem.id;
+        duplicateItem.name = duplicateItem.name + ' (Copy)';
+        
+        setCurrentItem(duplicateItem);
+        setOpen(true);
+    };
+
     const addSize = () => {
         const newSizes = [...(currentItem.sizes || [])];
         newSizes.push({ name: '', price: 0, servingDetails: {} });
@@ -232,6 +250,7 @@ export default function MenuItemsPage() {
                                             item={row}
                                             categoryName={getCategoryName(row.categoryId)}
                                             onEdit={handleOpen}
+                                            onDuplicate={handleDuplicate}
                                             onDelete={handleDelete}
                                         />
                                     ))}
