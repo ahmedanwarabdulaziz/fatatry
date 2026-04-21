@@ -53,8 +53,8 @@ export default async function Home() {
                                 <>
                                     <Image src={settings.topAdImage} alt="Top Ad Banner" fill className="object-cover" />
                                     {(settings.topAdTitle || settings.topAdDesc) && (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                            {settings.topAdTitle && <h3 className="text-white font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.topAdTitle}</h3>}
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-transparent p-4 flex flex-col justify-start pointer-events-none">
+                                            {settings.topAdTitle && <h3 className="text-accent-gold font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.topAdTitle}</h3>}
                                             {settings.topAdDesc && <p className="text-white/95 text-xs sm:text-sm mt-0.5 leading-relaxed drop-shadow-sm pointer-events-auto">{settings.topAdDesc}</p>}
                                         </div>
                                     )}
@@ -73,8 +73,8 @@ export default async function Home() {
                                 <>
                                     <Image src={settings.middleAdImage} alt="Middle Ad Banner" fill className="object-cover" />
                                     {(settings.middleAdTitle || settings.middleAdDesc) && (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                            {settings.middleAdTitle && <h3 className="text-white font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.middleAdTitle}</h3>}
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-transparent p-4 flex flex-col justify-start pointer-events-none">
+                                            {settings.middleAdTitle && <h3 className="text-accent-gold font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.middleAdTitle}</h3>}
                                             {settings.middleAdDesc && <p className="text-white/95 text-xs sm:text-sm mt-0.5 leading-relaxed drop-shadow-sm pointer-events-auto">{settings.middleAdDesc}</p>}
                                         </div>
                                     )}
@@ -93,8 +93,8 @@ export default async function Home() {
                                 <>
                                     <Image src={settings.bottomAdImage} alt="Bottom Ad Banner" fill className="object-cover" />
                                     {(settings.bottomAdTitle || settings.bottomAdDesc) && (
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent p-4 flex flex-col justify-end pointer-events-none">
-                                            {settings.bottomAdTitle && <h3 className="text-white font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.bottomAdTitle}</h3>}
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/30 to-transparent p-4 flex flex-col justify-start pointer-events-none">
+                                            {settings.bottomAdTitle && <h3 className="text-accent-gold font-bold text-lg sm:text-xl drop-shadow-md leading-tight pointer-events-auto">{settings.bottomAdTitle}</h3>}
                                             {settings.bottomAdDesc && <p className="text-white/95 text-xs sm:text-sm mt-0.5 leading-relaxed drop-shadow-sm pointer-events-auto">{settings.bottomAdDesc}</p>}
                                         </div>
                                     )}
