@@ -94,6 +94,7 @@ const ExpandableDescription = ({ text }: { text: string }) => {
 export default function MenuClient({ categories, items }: MenuClientProps) {
     const [activeCategory, setActiveCategory] = useState<string>("ALL");
     const [searchTerm, setSearchTerm] = useState("");
+    const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const deferredSearchTerm = useDeferredValue(searchTerm);
 
     // Global filter first based on search
@@ -234,39 +235,69 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
 
                 {/* 1. Header and Navigation - Static in fixed-height layout */}
                 <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-xl border-b border-border shadow-sm">
-                    <div className="px-4 pt-4 pb-3 flex flex-col gap-4">
+                    <div className="px-4 pt-4 pb-3 flex flex-col">
                         {/* Top Bar */}
-                        <div className="flex items-center justify-between">
+                        <div className="flex items-center justify-between z-10 bg-background/0">
                             <Link href="/" className="h-10 w-10 flex-shrink-0 rounded-control bg-surface border border-border flex items-center justify-center text-main-text hover:bg-surface-elevated active:scale-95 transition-all">
                                 <ArrowBack fontSize="small" />
                             </Link>
                             <span className="text-main-text font-bold tracking-wide text-lg text-center absolute left-1/2 -translate-x-1/2">
                                 Elfatatry
                             </span>
-                            <div className="w-10"></div> {/* Spacer to center the title perfectly */}
+                            <button
+                                onClick={() => {
+                                    if (isSearchExpanded) {
+                                        setIsSearchExpanded(false);
+                                        setSearchTerm("");
+                                    } else {
+                                        setIsSearchExpanded(true);
+                                    }
+                                }}
+                                className={`h-10 w-10 flex-shrink-0 rounded-control border flex items-center justify-center transition-all duration-300 active:scale-95 ${
+                                    isSearchExpanded 
+                                        ? 'bg-accent-gold text-background border-accent-gold shadow-md' 
+                                        : 'bg-surface text-main-text border-border hover:bg-surface-elevated'
+                                }`}
+                                aria-label="Toggle search"
+                            >
+                                {isSearchExpanded ? <Clear fontSize="small" /> : <Search fontSize="small" />}
+                            </button>
                         </div>
 
                         {/* Search Bar */}
-                        <div className="relative w-full">
-                            <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-text">
-                                <Search fontSize="small" />
-                            </div>
-                            <input
-                                type="text"
-                                className="w-full bg-surface border border-border rounded-full py-2.5 pl-10 pr-10 text-main-text text-sm focus:outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold transition-colors placeholder:text-muted-text"
-                                placeholder="Search menu..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            {searchTerm && (
-                                <button
-                                    onClick={() => setSearchTerm("")}
-                                    className="absolute inset-y-0 right-3 flex items-center text-muted-text hover:text-main-text active:scale-95 transition-all"
+                        <AnimatePresence>
+                            {isSearchExpanded && (
+                                <motion.div
+                                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                    animate={{ height: "auto", opacity: 1, marginTop: 16 }}
+                                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="overflow-hidden w-full flex flex-col"
                                 >
-                                    <Clear fontSize="small" />
-                                </button>
+                                    <div className="relative w-full pb-1">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-muted-text pb-1">
+                                            <Search fontSize="small" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            autoFocus
+                                            className="w-full bg-surface border border-border rounded-full py-2.5 pl-10 pr-10 text-main-text text-sm focus:outline-none focus:border-accent-gold focus:ring-1 focus:ring-accent-gold transition-colors placeholder:text-muted-text"
+                                            placeholder="Search menu..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                        />
+                                        {searchTerm && (
+                                            <button
+                                                onClick={() => setSearchTerm("")}
+                                                className="absolute inset-y-0 right-3 flex items-center text-muted-text hover:text-main-text active:scale-95 transition-all pb-1"
+                                            >
+                                                <Clear fontSize="small" />
+                                            </button>
+                                        )}
+                                    </div>
+                                </motion.div>
                             )}
-                        </div>
+                        </AnimatePresence>
                     </div>
 
                     {/* Horizontal Categories Tabs */}
