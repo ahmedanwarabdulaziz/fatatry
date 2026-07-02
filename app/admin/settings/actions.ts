@@ -14,6 +14,10 @@ export interface HomepageSettings {
     bottomAdImage: string;
     bottomAdTitle?: string;
     bottomAdDesc?: string;
+    cateringTooltipImage?: string;
+    cateringTooltipText?: string;
+    enableCateringTooltip?: boolean;
+    enableCateringMenu?: boolean;
 }
 
 const SETTINGS_DOC_PATH = 'settings/homepage';
@@ -42,11 +46,25 @@ export async function saveHomepageSettings(formData: FormData) {
     const bottomAdTitle = formData.get('bottomAdTitle') as string || '';
     const bottomAdDesc = formData.get('bottomAdDesc') as string || '';
 
+    const cateringTooltipImageFile = formData.get('cateringTooltipImageFile') as File | null;
+    let cateringTooltipImage = formData.get('existingCateringTooltipImage') as string || '';
+    const cateringTooltipText = formData.get('cateringTooltipText') as string || '';
+    const enableCateringTooltip = formData.get('enableCateringTooltip') === 'true';
+    const enableCateringMenu = formData.get('enableCateringMenu') === 'true';
+
     if (topAdImageFile && topAdImageFile.size > 0) {
         try {
             topAdImage = await uploadFileToR2(topAdImageFile, 'settings/ads');
         } catch (error) {
             console.error("Failed to upload top ad image:", error);
+        }
+    }
+
+    if (cateringTooltipImageFile && cateringTooltipImageFile.size > 0) {
+        try {
+            cateringTooltipImage = await uploadFileToR2(cateringTooltipImageFile, 'settings/tooltip');
+        } catch (error) {
+            console.error("Failed to upload tooltip image:", error);
         }
     }
 
@@ -76,6 +94,10 @@ export async function saveHomepageSettings(formData: FormData) {
         bottomAdImage,
         bottomAdTitle,
         bottomAdDesc,
+        cateringTooltipImage,
+        cateringTooltipText,
+        enableCateringTooltip,
+        enableCateringMenu,
     };
 
     await adminDb.doc(SETTINGS_DOC_PATH).set(data, { merge: true });

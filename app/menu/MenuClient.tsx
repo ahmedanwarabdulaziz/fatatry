@@ -10,6 +10,7 @@ import { motion, AnimatePresence } from "framer-motion";
 interface Category {
     id: string;
     name: string;
+    type?: 'dine-in' | 'catering';
 }
 
 interface MenuItem {
@@ -39,6 +40,7 @@ interface MenuItem {
 interface MenuClientProps {
     categories: Category[];
     items: MenuItem[];
+    settings?: any;
 }
 
 const ExpandableDescription = ({ text }: { text: string }) => {
@@ -91,11 +93,32 @@ const ExpandableDescription = ({ text }: { text: string }) => {
     );
 };
 
-export default function MenuClient({ categories, items }: MenuClientProps) {
+export default function MenuClient({ categories, items, settings }: MenuClientProps) {
+    const [menuMode, setMenuMode] = useState<'dine-in' | 'catering'>('dine-in');
+    const [showTooltip, setShowTooltip] = useState(false);
     const [activeCategory, setActiveCategory] = useState<string>("ALL");
     const [searchTerm, setSearchTerm] = useState("");
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const deferredSearchTerm = useDeferredValue(searchTerm);
+
+    useEffect(() => {
+        if (settings?.enableCateringMenu !== false && settings?.enableCateringTooltip !== false) {
+            const timer = setTimeout(() => setShowTooltip(true), 500);
+            return () => clearTimeout(timer);
+        }
+    }, [settings]);
+
+    const dismissTooltip = () => {
+        setShowTooltip(false);
+    };
+
+    const handleModeSwitch = (mode: 'dine-in' | 'catering') => {
+        setMenuMode(mode);
+        setActiveCategory("ALL");
+        if (mode === 'catering') dismissTooltip();
+    };
+
+    const currentModeCategories = categories.filter(c => (c.type || 'dine-in') === menuMode);
 
     // Global filter first based on search
     const searchFilteredItems = items.filter(item => {
@@ -105,8 +128,11 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
         return matchesSearch;
     });
 
+    const modeCategoryIds = new Set(currentModeCategories.map(c => c.id));
+    const modeFilteredItems = searchFilteredItems.filter(item => modeCategoryIds.has(item.categoryId));
+
     // Then filter by category
-    const activeItems = searchFilteredItems.filter(item => 
+    const activeItems = modeFilteredItems.filter(item => 
         activeCategory === "ALL" || item.categoryId === activeCategory
     );
 
@@ -300,8 +326,66 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                         </AnimatePresence>
                     </div>
 
+                    {/* Menu Mode Toggle */}
+                    {settings?.enableCateringMenu !== false && (
+                        <div className="px-4 pt-1 pb-1 relative z-20">
+                            <div className="bg-surface-elevated p-1 rounded-full flex relative border border-border shadow-inner">
+                                <button
+                                    onClick={() => handleModeSwitch('dine-in')}
+                                    className={`flex-1 py-1.5 text-sm font-bold rounded-full relative z-10 transition-colors ${menuMode === 'dine-in' ? 'text-background' : 'text-muted-text'}`}
+                                >
+                                    🍽️ Dine-in
+                                </button>
+                                <button
+                                    onClick={() => handleModeSwitch('catering')}
+                                    className={`flex-1 py-1.5 text-sm font-bold rounded-full relative z-10 transition-colors ${menuMode === 'catering' ? 'text-background' : 'text-muted-text'}`}
+                                >
+                                    🎉 Catering
+                                </button>
+                                {/* Sliding background */}
+                                <motion.div
+                                    layout
+                                    className="absolute inset-y-1 w-[calc(50%-4px)] bg-accent-gold rounded-full z-0 shadow-sm"
+                                    initial={false}
+                                    animate={{ left: menuMode === 'dine-in' ? 4 : 'calc(50%)' }}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                                />
+                            </div>
+
+                            {/* Tooltip Popup */}
+                            <AnimatePresence>
+                                {showTooltip && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.15 } }}
+                                        className="absolute top-full mt-2 right-4 w-64 bg-surface backdrop-blur-xl border border-accent-gold/50 shadow-[0_10px_40px_-10px_rgba(212,175,55,0.4)] rounded-card p-3 z-50 flex flex-col gap-2 origin-top-right"
+                                    >
+                                        <div className="absolute -top-2 right-[25%] w-4 h-4 bg-surface border-t border-l border-accent-gold/50 transform rotate-45"></div>
+                                        <div className="flex justify-between items-start gap-2 relative z-10">
+                                            <span className="text-main-text text-sm font-bold leading-tight">
+                                                {settings?.cateringTooltipText || "🎉 New! Planning an event? Check out our Catering Menu!"}
+                                            </span>
+                                            <button onClick={dismissTooltip} className="text-muted-text hover:text-main-text shrink-0 active:scale-95">
+                                                <Clear fontSize="small" />
+                                            </button>
+                                        </div>
+                                        {settings?.cateringTooltipImage && (
+                                            <div className="w-full h-28 relative rounded-control overflow-hidden mt-1 bg-surface-elevated border border-border/50">
+                                                <Image src={settings.cateringTooltipImage} alt="Catering" fill className="object-cover" unoptimized priority />
+                                            </div>
+                                        )}
+                                        <button onClick={() => handleModeSwitch('catering')} className="w-full mt-1 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold font-bold py-1.5 rounded-control text-xs transition-colors active:scale-95">
+                                            View Catering Offers
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    )}
+
                     {/* Horizontal Categories Tabs */}
-                    <div className="px-4 pb-3 pt-3 overflow-x-auto no-scrollbar flex gap-2 w-full">
+                    <div className="px-4 pb-3 pt-2 overflow-x-auto no-scrollbar flex gap-2 w-full">
                         <button
                             onClick={() => setActiveCategory("ALL")}
                             className={`flex-none px-5 py-2 rounded-full text-sm font-semibold transition-all active:scale-95 ${
@@ -312,7 +396,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                         >
                             All Menu
                         </button>
-                        {categories.map((cat) => (
+                        {currentModeCategories.map((cat) => (
                             <button
                                 key={cat.id}
                                 onClick={() => setActiveCategory(cat.id)}
@@ -334,8 +418,8 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                         <AnimatePresence mode="wait">
                             {activeCategory === "ALL" ? (
                                 <div className="space-y-8">
-                                    {categories.map((cat) => {
-                                        const catItems = searchFilteredItems.filter(item => item.categoryId === cat.id);
+                                    {currentModeCategories.map((cat) => {
+                                        const catItems = modeFilteredItems.filter(item => item.categoryId === cat.id);
 
                                         if (catItems.length === 0) return null;
 
@@ -354,7 +438,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                                     })}
 
                                     {/* Empty state for ALL view if search yields no results */}
-                                    {searchFilteredItems.length === 0 && (
+                                    {modeFilteredItems.length === 0 && (
                                         <div className="text-center py-20 bg-surface rounded-card border border-border mt-4">
                                             <div className="text-muted-text mb-4 flex justify-center">
                                                 <Search style={{ fontSize: 48 }} opacity={0.5} />
@@ -375,7 +459,7 @@ export default function MenuClient({ categories, items }: MenuClientProps) {
                                             <div className="text-muted-text mb-4 flex justify-center">
                                                 <Search style={{ fontSize: 48 }} opacity={0.5} />
                                             </div>
-                                            <h3 className="text-main-text text-lg font-medium">No items found in {categories.find(c => c.id === activeCategory)?.name}</h3>
+                                            <h3 className="text-main-text text-lg font-medium">No items found in {currentModeCategories.find(c => c.id === activeCategory)?.name}</h3>
                                             <p className="text-muted-text text-sm mt-1">Try searching for something else</p>
                                         </div>
                                     )}

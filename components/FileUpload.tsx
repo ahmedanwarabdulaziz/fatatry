@@ -103,7 +103,7 @@ export default function FileUpload({ label, name, currentImage, isUploading = fa
                             <Typography variant="body2" color="text.secondary" noWrap sx={{ maxWidth: 200 }}>
                                 {fileName || 'Current Image'}
                             </Typography>
-                            {isUploading && (
+                            {isUploading && fileName && (
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, justifyContent: 'center' }}>
                                     <CircularProgress size={16} />
                                     <Typography variant="caption" color="primary">Uploading...</Typography>
@@ -124,7 +124,7 @@ export default function FileUpload({ label, name, currentImage, isUploading = fa
                     </Box>
                 )}
 
-                {isUploading && <LinearProgress sx={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} />}
+                {isUploading && fileName && <LinearProgress sx={{ position: 'absolute', bottom: 0, left: 0, right: 0 }} />}
             </Box>
         </Box>
     );

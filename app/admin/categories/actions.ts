@@ -12,6 +12,7 @@ export interface Category {
     squareImage: string;
     isFeatured: boolean;
     order: number;
+    type?: 'dine-in' | 'catering';
 }
 
 const COLLECTION = 'categories';
@@ -26,6 +27,7 @@ export async function saveCategory(formData: FormData) {
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
     const isFeatured = formData.get('isFeatured') === 'true';
+    const type = (formData.get('type') as 'dine-in' | 'catering') || 'dine-in';
 
     const heroFile = formData.get('heroImageFile') as File;
     const squareFile = formData.get('squareImageFile') as File;
@@ -57,6 +59,7 @@ export async function saveCategory(formData: FormData) {
         isFeatured,
         heroImage,
         squareImage,
+        type,
     };
 
     if (id) {

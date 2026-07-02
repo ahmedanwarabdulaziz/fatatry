@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import {
     Typography, Button, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box,
     Dialog, DialogTitle, DialogContent, DialogActions, TextField, FormControlLabel, Switch, CircularProgress,
-    IconButton
+    IconButton, FormControl, InputLabel, Select, MenuItem as MuiMenuItem
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
@@ -53,7 +53,7 @@ export default function CategoriesPage() {
     }, []);
 
     const handleOpen = (category?: Category) => {
-        setCurrentCategory(category || { name: '', description: '', isFeatured: false, heroImage: '', squareImage: '' });
+        setCurrentCategory(category || { name: '', description: '', isFeatured: false, heroImage: '', squareImage: '', type: 'dine-in' });
         setOpen(true);
     };
 
@@ -166,6 +166,20 @@ export default function CategoriesPage() {
                             rows={2}
                             onFocus={(e) => e.target.select()}
                         />
+
+                        <FormControl fullWidth>
+                            <InputLabel id="type-select-label">Menu Type</InputLabel>
+                            <Select
+                                labelId="type-select-label"
+                                name="type"
+                                label="Menu Type"
+                                defaultValue={currentCategory.type || 'dine-in'}
+                                onChange={(e) => setCurrentCategory({ ...currentCategory, type: e.target.value as 'dine-in' | 'catering' })}
+                            >
+                                <MuiMenuItem value="dine-in">Dine-in Menu</MuiMenuItem>
+                                <MuiMenuItem value="catering">Catering Menu</MuiMenuItem>
+                            </Select>
+                        </FormControl>
 
                         <FileUpload
                             label="Hero Image"

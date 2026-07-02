@@ -21,6 +21,7 @@ export default function MenuItemsPage() {
     const [open, setOpen] = useState(false);
     const [currentItem, setCurrentItem] = useState<Partial<MenuItem>>({});
     const [saving, setSaving] = useState(false);
+    const [filterMenuType, setFilterMenuType] = useState<string>('ALL');
     const [filterCategory, setFilterCategory] = useState<string>('ALL');
 
     // DnD Sensors
@@ -196,25 +197,60 @@ export default function MenuItemsPage() {
 
     const getCategoryName = (id: string) => categories.find(c => c.id === id)?.name;
 
-    const displayedItems = filterCategory === 'ALL' 
-        ? items 
-        : items.filter(i => i.categoryId === filterCategory);
+    const handleMenuTypeChange = (newType: string) => {
+        setFilterMenuType(newType);
+        if (newType !== 'ALL' && filterCategory !== 'ALL') {
+            const currentCat = categories.find(c => c.id === filterCategory);
+            const currentCatType = currentCat?.type || 'dine-in';
+            if (currentCatType !== newType) {
+                setFilterCategory('ALL');
+            }
+        }
+    };
+
+    const visibleCategories = categories.filter(c => 
+        filterMenuType === 'ALL' || (c.type || 'dine-in') === filterMenuType
+    );
+
+    const displayedItems = items.filter(item => {
+        const category = categories.find(c => c.id === item.categoryId);
+        const itemMenuType = category?.type || 'dine-in';
+
+        if (filterMenuType !== 'ALL' && itemMenuType !== filterMenuType) return false;
+        if (filterCategory !== 'ALL' && item.categoryId !== filterCategory) return false;
+
+        return true;
+    });
 
     return (
         <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}>
                 <Typography variant="h4">Menu Items</Typography>
                 <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <FormControl size="small" sx={{ minWidth: 150 }}>
+                        <InputLabel sx={{ bgcolor: 'background.paper', px: 0.5, borderRadius: 1 }}>Menu Type</InputLabel>
+                        <Select
+                            value={filterMenuType}
+                            label="Menu Type"
+                            onChange={(e) => handleMenuTypeChange(e.target.value as string)}
+                            sx={{ bgcolor: 'background.paper' }}
+                        >
+                            <MuiMenuItem value="ALL">All Menus</MuiMenuItem>
+                            <MuiMenuItem value="dine-in">Dine-in</MuiMenuItem>
+                            <MuiMenuItem value="catering">Catering</MuiMenuItem>
+                        </Select>
+                    </FormControl>
+
                     <FormControl size="small" sx={{ minWidth: 200 }}>
-                        <InputLabel sx={{ bgcolor: 'background.paper', px: 0.5, borderRadius: 1 }}>Filter by Category</InputLabel>
+                        <InputLabel sx={{ bgcolor: 'background.paper', px: 0.5, borderRadius: 1 }}>Category</InputLabel>
                         <Select
                             value={filterCategory}
-                            label="Filter by Category"
+                            label="Category"
                             onChange={(e) => setFilterCategory(e.target.value as string)}
                             sx={{ bgcolor: 'background.paper' }}
                         >
                             <MuiMenuItem value="ALL">All Categories</MuiMenuItem>
-                            {categories.map((cat) => (
+                            {visibleCategories.map((cat) => (
                                 <MuiMenuItem key={cat.id} value={cat.id}>{cat.name}</MuiMenuItem>
                             ))}
                         </Select>

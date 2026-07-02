@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Typography, Box, Button, CircularProgress, Paper, Divider, TextField } from '@mui/material';
+import { Typography, Box, Button, CircularProgress, Paper, Divider, TextField, FormControlLabel, Switch } from '@mui/material';
 import SaveIcon from '@mui/icons-material/Save';
 import FileUpload from '../../../components/FileUpload';
 import { getHomepageSettings, saveHomepageSettings, HomepageSettings } from './actions';
@@ -29,14 +29,20 @@ export default function SettingsPage() {
         formData.append('existingTopAdImage', settings?.topAdImage || '');
         formData.append('existingMiddleAdImage', settings?.middleAdImage || '');
         formData.append('existingBottomAdImage', settings?.bottomAdImage || '');
+        formData.append('existingCateringTooltipImage', settings?.cateringTooltipImage || '');
 
-        await saveHomepageSettings(formData);
-        
-        // Refresh local state to reflect new images
-        const data = await getHomepageSettings();
-        setSettings(data);
-        
-        setSaving(false);
+        try {
+            await saveHomepageSettings(formData);
+            
+            // Refresh local state to reflect new images
+            const data = await getHomepageSettings();
+            setSettings(data);
+        } catch (error) {
+            console.error("Failed to save settings:", error);
+            alert("An error occurred while saving settings. Please check console or try a smaller image.");
+        } finally {
+            setSaving(false);
+        }
     };
 
     if (loading) {
@@ -137,6 +143,59 @@ export default function SettingsPage() {
                                     label="Bottom Ad Description"
                                     name="bottomAdDesc"
                                     defaultValue={settings?.bottomAdDesc || ''}
+                                />
+                            </Box>
+                        </Box>
+
+                        <Divider />
+                        <Typography variant="h6" gutterBottom mt={2}>Catering Menu Settings</Typography>
+                        <Typography color="text.secondary" variant="body2" mb={4}>
+                            Enable the Catering Menu feature and configure the tooltip popup that points to it.
+                        </Typography>
+
+                        <Box sx={{ mb: 4, p: 2, bgcolor: 'background.paper', borderRadius: 1, border: '1px solid', borderColor: 'divider' }}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        name="enableCateringMenu"
+                                        value="true"
+                                        defaultChecked={settings?.enableCateringMenu ?? true}
+                                    />
+                                }
+                                label={
+                                    <Box>
+                                        <Typography variant="subtitle1" fontWeight="bold">Enable Catering Menu Tab</Typography>
+                                        <Typography variant="body2" color="text.secondary">If disabled, the catering toggle switch will be hidden from the main menu.</Typography>
+                                    </Box>
+                                }
+                            />
+                        </Box>
+
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+                            <Box sx={{ flex: '1 1 300px' }}>
+                                <FileUpload
+                                    label="Tooltip Popup Image"
+                                    name="cateringTooltipImageFile"
+                                    currentImage={settings?.cateringTooltipImage}
+                                    isUploading={saving}
+                                />
+                            </Box>
+                            <Box sx={{ flex: '2 1 300px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            name="enableCateringTooltip"
+                                            value="true"
+                                            defaultChecked={settings?.enableCateringTooltip ?? true}
+                                        />
+                                    }
+                                    label="Enable Tooltip Popup"
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Tooltip Text"
+                                    name="cateringTooltipText"
+                                    defaultValue={settings?.cateringTooltipText || '🎉 New! Planning an event? Check out our Catering Menu!'}
                                 />
                             </Box>
                         </Box>
