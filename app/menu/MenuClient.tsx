@@ -4,6 +4,7 @@ import { useState, useDeferredValue, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import MobileContainer from "@/components/MobileContainer";
+import { imageUrl } from "@/lib/image-url";
 import { ArrowBack, Search, Clear, Restaurant } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -93,6 +94,125 @@ const ExpandableDescription = ({ text }: { text: string }) => {
     );
 };
 
+// Defined at module level so parent re-renders (tooltip, search) don't remount every card and restart image downloads
+const MenuItemCard = ({ item, priority }: { item: MenuItem, priority: boolean }) => (
+    <motion.div
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+        className="relative w-full active:scale-[0.98] transition-transform duration-200"
+    >
+        <div className="bg-surface backdrop-blur-md border border-border rounded-card p-3 flex gap-4 overflow-hidden relative">
+            {/* Image */}
+            <div className="h-24 w-24 shrink-0 rounded-control overflow-hidden relative bg-surface-elevated">
+                {item.squareImage ? (
+                    <Image
+                        src={imageUrl(item.squareImage, 256)}
+                        alt={item.name}
+                        fill
+                        sizes="96px"
+                        priority={priority}
+                        className="object-cover"
+                    />
+                ) : (
+                    <div className="w-full h-full flex items-center justify-center text-muted-text/30 border border-border/30 rounded-control">
+                        <Restaurant style={{ fontSize: 32 }} />
+                    </div>
+                )}
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                <div>
+                    <div className="flex justify-between items-start gap-2">
+                        <h3 className="text-main-text font-bold text-lg leading-tight">
+                            {item.name}
+                        </h3>
+                        {/* Show base price or 'start from' if variations exist */}
+                        <div className="flex flex-col items-end shrink-0">
+                            {item.sizes && item.sizes.length > 0 ? (
+                                <>
+                                    <span className="text-[10px] text-muted-text uppercase tracking-wider leading-none mb-0.5">From</span>
+                                    <span className="text-accent-gold font-bold text-lg leading-none">
+                                        ${Math.min(...item.sizes.map(s => s.price)).toFixed(2)}
+                                    </span>
+                                </>
+                            ) : (
+                                <span className="text-accent-gold font-bold text-lg leading-none">
+                                    ${item.price.toFixed(2)}
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    {item.description && (
+                        <ExpandableDescription text={item.description} />
+                    )}
+
+                    {/* Professional Compact Variations Grid */}
+                    {item.sizes && item.sizes.length > 0 && (
+                        <div className="mt-3">
+                            <div className="grid grid-cols-3 gap-2">
+                                {item.sizes.map((s, idx) => (
+                                    <div key={idx} className="bg-surface-elevated border border-border rounded-control p-1.5 flex flex-col items-center justify-center text-center">
+                                        <span className="text-[9px] text-muted-text uppercase tracking-wide mb-0.5">{s.name}</span>
+                                        <span className="text-accent-gold font-bold text-xs leading-none mt-0.5">${s.price.toFixed(2)}</span>
+                                        {/* Variation Details */}
+                                        {s.servingDetails && (
+                                            <div className="mt-1 flex flex-wrap justify-center gap-0.5 text-main-text">
+                                                {s.servingDetails.weightGrams && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.weightGrams}g</span>}
+                                                {s.servingDetails.pieceCount && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.pieceCount}pcs</span>}
+                                                {s.servingDetails.skewerCount && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.skewerCount}skw</span>}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Compact Addons Grid */}
+                    {item.addons && item.addons.length > 0 && (
+                        <div className="mt-2 border-t border-border pt-2">
+                            <p className="text-[10px] uppercase tracking-wider text-accent-gold/80 font-bold mb-1">Extras</p>
+                            <div className="flex flex-col gap-1.5">
+                                {item.addons.map((a, idx) => (
+                                    <div key={idx} className="flex justify-between items-start text-[10px] bg-surface px-2 py-1 rounded-sm border border-border">
+                                        <span className="text-muted-text mr-2 leading-tight flex-1">{a.name}</span>
+                                        <span className="text-accent-gold font-medium whitespace-nowrap shrink-0 mt-0.5">+ ${a.price.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Footer / Meta */}
+                <div className="mt-2 flex items-center justify-between">
+                    <div className="flex gap-2 flex-wrap">
+                        {item.servingDetails?.weightGrams && (
+                            <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
+                                {item.servingDetails.weightGrams}g
+                            </span>
+                        )}
+                        {item.servingDetails?.pieceCount && (
+                            <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
+                                {item.servingDetails.pieceCount} Piece{item.servingDetails.pieceCount > 1 ? 's' : ''}
+                            </span>
+                        )}
+                        {item.servingDetails?.skewerCount && item.servingDetails.skewerCount > 0 && (
+                            <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
+                                {item.servingDetails.skewerCount} Skewer{item.servingDetails.skewerCount > 1 ? 's' : ''}
+                            </span>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </motion.div>
+);
+
 export default function MenuClient({ categories, items, settings }: MenuClientProps) {
     const [menuMode, setMenuMode] = useState<'dine-in' | 'catering'>('dine-in');
     const [showTooltip, setShowTooltip] = useState(false);
@@ -134,125 +254,6 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
     // Then filter by category
     const activeItems = modeFilteredItems.filter(item => 
         activeCategory === "ALL" || item.categoryId === activeCategory
-    );
-
-    // Helper to render item card
-    const MenuItemCard = ({ item, index }: { item: MenuItem, index: number }) => (
-        <motion.div
-            layout
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="relative w-full active:scale-[0.98] transition-transform duration-200"
-        >
-            <div className="bg-surface backdrop-blur-md border border-border rounded-card p-3 flex gap-4 overflow-hidden relative">
-                {/* Image */}
-                <div className="h-24 w-24 shrink-0 rounded-control overflow-hidden relative bg-surface-elevated">
-                    {item.squareImage ? (
-                        <Image
-                            src={item.squareImage}
-                            alt={item.name}
-                            fill
-                            sizes="96px"
-                            priority={index < 6}
-                            className="object-cover"
-                        />
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted-text/30 border border-border/30 rounded-control">
-                            <Restaurant style={{ fontSize: 32 }} />
-                        </div>
-                    )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                    <div>
-                        <div className="flex justify-between items-start gap-2">
-                            <h3 className="text-main-text font-bold text-lg leading-tight">
-                                {item.name}
-                            </h3>
-                            {/* Show base price or 'start from' if variations exist */}
-                            <div className="flex flex-col items-end shrink-0">
-                                {item.sizes && item.sizes.length > 0 ? (
-                                    <>
-                                        <span className="text-[10px] text-muted-text uppercase tracking-wider leading-none mb-0.5">From</span>
-                                        <span className="text-accent-gold font-bold text-lg leading-none">
-                                            ${Math.min(...item.sizes.map(s => s.price)).toFixed(2)}
-                                        </span>
-                                    </>
-                                ) : (
-                                    <span className="text-accent-gold font-bold text-lg leading-none">
-                                        ${item.price.toFixed(2)}
-                                    </span>
-                                )}
-                            </div>
-                        </div>
-                        {item.description && (
-                            <ExpandableDescription text={item.description} />
-                        )}
-
-                        {/* Professional Compact Variations Grid */}
-                        {item.sizes && item.sizes.length > 0 && (
-                            <div className="mt-3">
-                                <div className="grid grid-cols-3 gap-2">
-                                    {item.sizes.map((s, idx) => (
-                                        <div key={idx} className="bg-surface-elevated border border-border rounded-control p-1.5 flex flex-col items-center justify-center text-center">
-                                            <span className="text-[9px] text-muted-text uppercase tracking-wide mb-0.5">{s.name}</span>
-                                            <span className="text-accent-gold font-bold text-xs leading-none mt-0.5">${s.price.toFixed(2)}</span>
-                                            {/* Variation Details */}
-                                            {s.servingDetails && (
-                                                <div className="mt-1 flex flex-wrap justify-center gap-0.5 text-main-text">
-                                                    {s.servingDetails.weightGrams && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.weightGrams}g</span>}
-                                                    {s.servingDetails.pieceCount && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.pieceCount}pcs</span>}
-                                                    {s.servingDetails.skewerCount && <span className="text-[8px] bg-white/10 px-1 rounded-sm">{s.servingDetails.skewerCount}skw</span>}
-                                                </div>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Compact Addons Grid */}
-                        {item.addons && item.addons.length > 0 && (
-                            <div className="mt-2 border-t border-border pt-2">
-                                <p className="text-[10px] uppercase tracking-wider text-accent-gold/80 font-bold mb-1">Extras</p>
-                                <div className="flex flex-col gap-1.5">
-                                    {item.addons.map((a, idx) => (
-                                        <div key={idx} className="flex justify-between items-start text-[10px] bg-surface px-2 py-1 rounded-sm border border-border">
-                                            <span className="text-muted-text mr-2 leading-tight flex-1">{a.name}</span>
-                                            <span className="text-accent-gold font-medium whitespace-nowrap shrink-0 mt-0.5">+ ${a.price.toFixed(2)}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Footer / Meta */}
-                    <div className="mt-2 flex items-center justify-between">
-                        <div className="flex gap-2 flex-wrap">
-                            {item.servingDetails?.weightGrams && (
-                                <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
-                                    {item.servingDetails.weightGrams}g
-                                </span>
-                            )}
-                            {item.servingDetails?.pieceCount && (
-                                <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
-                                    {item.servingDetails.pieceCount} Piece{item.servingDetails.pieceCount > 1 ? 's' : ''}
-                                </span>
-                            )}
-                            {item.servingDetails?.skewerCount && item.servingDetails.skewerCount > 0 && (
-                                <span className="text-[10px] bg-surface-elevated border border-border text-main-text px-2 py-0.5 rounded-control shadow-sm">
-                                    {item.servingDetails.skewerCount} Skewer{item.servingDetails.skewerCount > 1 ? 's' : ''}
-                                </span>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </motion.div>
     );
 
     return (
@@ -372,7 +373,7 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
                                         </div>
                                         {settings?.cateringTooltipImage && (
                                             <div className="w-full h-28 relative rounded-control overflow-hidden mt-1 bg-surface-elevated border border-border/50">
-                                                <Image src={settings.cateringTooltipImage} alt="Catering" fill className="object-cover" unoptimized priority />
+                                                <Image src={imageUrl(settings.cateringTooltipImage, 640)} alt="Catering" fill className="object-cover" unoptimized priority />
                                             </div>
                                         )}
                                         <button onClick={() => handleModeSwitch('catering')} className="w-full mt-1 bg-accent-gold/10 hover:bg-accent-gold/20 text-accent-gold font-bold py-1.5 rounded-control text-xs transition-colors active:scale-95">
@@ -418,7 +419,7 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
                         <AnimatePresence mode="wait">
                             {activeCategory === "ALL" ? (
                                 <div className="space-y-8">
-                                    {currentModeCategories.map((cat) => {
+                                    {currentModeCategories.map((cat, catIndex) => {
                                         const catItems = modeFilteredItems.filter(item => item.categoryId === cat.id);
 
                                         if (catItems.length === 0) return null;
@@ -430,7 +431,7 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
                                                 </h2>
                                                 <div className="space-y-4">
                                                     {catItems.map((item, i) => (
-                                                        <MenuItemCard key={item.id} item={item} index={i} />
+                                                        <MenuItemCard key={item.id} item={item} priority={catIndex === 0 && i < 3} />
                                                     ))}
                                                 </div>
                                             </div>
@@ -451,7 +452,7 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
                             ) : (
                                 <div className="space-y-4">
                                     {activeItems.map((item, i) => (
-                                        <MenuItemCard key={item.id} item={item} index={i} />
+                                        <MenuItemCard key={item.id} item={item} priority={i < 3} />
                                     ))}
 
                                     {activeItems.length === 0 && (

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { imageUrl } from '@/lib/image-url';
 import { ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { HomepageSettings } from '../app/admin/settings/actions';
 
@@ -63,7 +64,7 @@ export default function AdCarousel({ settings }: AdCarouselProps) {
                     <div key={slide.id} className="min-w-full h-full relative flex-shrink-0 bg-gradient-to-br from-accent-gold/10 via-surface/80 to-accent-gold/5 flex flex-col items-center justify-center">
                         {slide.image ? (
                             <>
-                                <Image src={slide.image} alt={`${slide.placeholderSlot} Ad Banner`} fill className="object-cover" />
+                                <Image src={imageUrl(slide.image, 828)} alt={`${slide.placeholderSlot} Ad Banner`} fill className="object-cover" />
                                 {(slide.title || slide.desc) && (
                                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent px-4 pt-4 pb-10 flex flex-col justify-end pointer-events-none max-h-[100%] overflow-y-auto no-scrollbar">
                                         {slide.title && <h3 className="text-accent-gold font-bold text-lg sm:text-2xl drop-shadow-md leading-tight shrink-0 pointer-events-auto uppercase tracking-wide">{slide.title}</h3>}
