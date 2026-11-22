@@ -7,13 +7,75 @@ import { getHomepageSettings } from "./admin/settings/actions";
 import { imageUrl } from "@/lib/image-url";
 import { fullAddress, mapsUrl, phoneHref, siteConfig } from "@/lib/site-config";
 
-const signatureDishes = [
-    { title: "Feteer", note: "Hand-stretched, flaky, from the oven", image: "/images/site/dish-feteer.webp" },
-    { title: "Koshari", note: "Rice, lentils, pasta and our tomato sauce", image: "/images/site/dish-koshari.webp" },
-    { title: "Grills", note: "Kofta, kabab, shish tawook and more", image: "/images/site/dish-grill.webp" },
-    { title: "Home Dishes", note: "Molokhya, bamia and the classics", image: "/images/site/dish-molokhya.webp" },
-    { title: "Appetizers", note: "Falafel, dips and pickles", image: "/images/site/dish-falafel.webp" },
-    { title: "Desserts & Drinks", note: "Sweet finishes and fresh juices", image: "/images/site/dish-desserts.webp" },
+// Plain-English intros for guests trying Egyptian food for the first time (dishes taken from the live menu)
+const starterDishes = [
+    {
+        title: "Koshary",
+        href: "/dishes/koshary",
+        tag: "Vegetarian",
+        text: "Egypt's favourite comfort food. Rice, lentils and pasta topped with crispy onions and a tangy tomato sauce.",
+        image: "/images/site/dish-koshari.webp",
+    },
+    {
+        title: "Hawawshi",
+        href: "/dishes/hawawshi",
+        tag: "Street food",
+        text: "Seasoned ground beef baked inside Egyptian bread until crispy. Think of it as Egypt's take on the burger.",
+        image: "/images/site/dish-hawawshi.webp",
+    },
+    {
+        title: "Falafel (Ta'ameya)",
+        href: "/dishes/falafel",
+        tag: "Vegetarian",
+        text: "Egyptian-style falafel made with fava beans: herby, green inside and extra crisp outside.",
+        image: "/images/site/dish-falafel.webp",
+    },
+    {
+        title: "Grills",
+        href: "/dishes/grills",
+        tag: "Crowd favourite",
+        text: "Kofta, shish tawouk and lamb chops, served with rice or fries, salad and tahini.",
+        image: "/images/site/dish-grill.webp",
+    },
+    {
+        title: "Molokhya",
+        href: "/dishes/molokhya",
+        tag: "Home cooking",
+        text: "A silky, garlicky green stew that every Egyptian grew up with. Best with rice or bread.",
+        image: "/images/site/dish-molokhya.webp",
+    },
+    {
+        title: "Desserts & Drinks",
+        href: "/menu",
+        tag: "Save room",
+        text: "Om Ali bread pudding, rice pudding, fresh mango and guava juice, Turkish coffee and more.",
+        image: "/images/site/dish-desserts.webp",
+    },
+];
+
+const feteerStyles = [
+    {
+        title: "Savoury",
+        href: "/dishes/savoury-feteer",
+        text: "Filled and baked until golden. A full meal, perfect for sharing.",
+        examples: ["Beef", "Mixed Cheese", "Chicken Strips", "Elfatatry Special"],
+        image: "/images/site/feteer-savoury.webp",
+    },
+    {
+        title: "Sweet",
+        href: "/dishes/sweet-feteer",
+        text: "Warm, flaky and indulgent. Dessert, or a treat with coffee.",
+        examples: ["Nutella", "Lotus", "Custard & Sugar", "Dubai Chocolate"],
+        image: "/images/site/feteer-sweet.webp",
+    },
+];
+
+const highlights = [
+    "Vegetarian options",
+    "Egyptian breakfast",
+    "Kids meal",
+    "Fresh juices",
+    "Catering trays",
 ];
 
 export default async function Home() {
@@ -52,11 +114,11 @@ export default async function Home() {
                         <p className="text-xs font-bold uppercase tracking-[0.24em] text-accent-gold">
                             Egyptian Kitchen · Streetsville
                         </p>
-                        <h1 className="mt-4 max-w-3xl text-[2.6rem] font-extrabold leading-[1.02] tracking-tight text-main-text sm:text-6xl md:text-7xl">
-                            Feteer from the oven. <span className="text-accent-gold">Made with love.</span>
+                        <h1 className="mt-4 max-w-3xl text-[2.5rem] font-extrabold leading-[1.02] tracking-tight text-main-text sm:text-6xl md:text-7xl">
+                            Egyptian comfort food, <span className="text-accent-gold">fresh from our oven.</span>
                         </h1>
                         <p className="mt-5 max-w-xl text-base leading-relaxed text-main-text/85 md:text-lg">
-                            Hand-stretched feteer, Egyptian home cooking and grills, shared with family at our table or yours.
+                            Flaky, hand-stretched feteer, savoury or sweet, plus koshary, grills and the home-style dishes Egypt loves.
                         </p>
                         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                             <Link
@@ -95,6 +157,93 @@ export default async function Home() {
                     </div>
                 </section>
 
+                {/* Feteer explained */}
+                <section className="mx-auto max-w-6xl px-4 py-20 md:px-6 md:py-28">
+                    <div className="max-w-2xl">
+                        <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-gold">Our Signature</p>
+                        <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-main-text md:text-5xl">
+                            What is feteer?
+                        </h2>
+                        <p className="mt-5 text-base leading-relaxed text-muted-text md:text-lg">
+                            Picture a flaky, buttery pastry, part croissant, part pie. We stretch the dough by hand until it&apos;s paper-thin,
+                            fold it into dozens of layers, fill it and bake it fresh to order. It&apos;s the dish we&apos;re named after.
+                        </p>
+                    </div>
+                    <div className="mt-10 grid gap-4 md:grid-cols-2 md:gap-6">
+                        {feteerStyles.map((style) => (
+                            <Link
+                                key={style.title}
+                                href={style.href}
+                                className="group relative flex min-h-[340px] items-end overflow-hidden rounded-card active:scale-[0.99] transition-transform md:min-h-[420px]"
+                            >
+                                <Image src={style.image} alt={`${style.title} feteer`} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover transition-transform duration-500 md:group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+                                <div className="relative p-6 md:p-8">
+                                    <h3 className="text-2xl font-extrabold text-main-text md:text-3xl">{style.title} feteer</h3>
+                                    <p className="mt-2 max-w-sm text-sm leading-relaxed text-main-text/80 md:text-base">{style.text}</p>
+                                    <ul className="mt-4 flex flex-wrap gap-2">
+                                        {style.examples.map((ex) => (
+                                            <li key={ex} className="rounded-full border border-main-text/25 bg-black/30 px-3 py-1 text-xs font-semibold text-main-text/90 backdrop-blur-sm">
+                                                {ex}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                    <Link href="/dishes/feteer-meshaltet" className="mt-6 inline-flex items-center gap-2 font-bold text-accent-gold hover:text-accent-gold-hover">
+                        Or start with the original: Feteer Meshaltet <ArrowForward fontSize="small" />
+                    </Link>
+                </section>
+
+                {/* Start here: Egyptian food for newcomers */}
+                <section className="border-y border-border bg-surface/40">
+                    <div className="mx-auto max-w-6xl px-4 py-20 md:px-6 md:py-28">
+                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+                            <div className="max-w-2xl">
+                                <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-gold">Beyond Feteer</p>
+                                <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-main-text md:text-5xl">
+                                    New to Egyptian food? Start here.
+                                </h2>
+                                <p className="mt-4 text-base leading-relaxed text-muted-text md:text-lg">
+                                    Hearty, flavourful and made for sharing. Here are the dishes our guests fall for first.
+                                </p>
+                            </div>
+                            <Link href="/menu" className="inline-flex shrink-0 items-center gap-2 font-bold text-accent-gold hover:text-accent-gold-hover">
+                                See the full menu <ArrowForward fontSize="small" />
+                            </Link>
+                        </div>
+                        <div className="no-scrollbar -mx-4 mt-10 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3 md:gap-6">
+                            {starterDishes.map((dish) => (
+                                <Link
+                                    key={dish.title}
+                                    href={dish.href}
+                                    className="group w-[78%] shrink-0 snap-center overflow-hidden rounded-card border border-border bg-surface transition-colors hover:border-accent-gold/50 active:scale-[0.99] sm:w-auto"
+                                >
+                                    <div className="relative aspect-[4/3] overflow-hidden">
+                                        <Image src={dish.image} alt={dish.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover transition-transform duration-500 md:group-hover:scale-105" />
+                                        <span className="absolute left-3 top-3 rounded-full bg-background/85 px-3 py-1 text-xs font-bold text-accent-gold backdrop-blur-sm">
+                                            {dish.tag}
+                                        </span>
+                                    </div>
+                                    <div className="p-5">
+                                        <h3 className="text-xl font-extrabold text-main-text">{dish.title}</h3>
+                                        <p className="mt-2 text-sm leading-relaxed text-muted-text">{dish.text}</p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                        <ul className="mt-10 flex flex-wrap gap-2">
+                            {highlights.map((h) => (
+                                <li key={h} className="rounded-full border border-border bg-surface px-4 py-2 text-sm font-semibold text-main-text/85">
+                                    {h}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </section>
+
                 {/* Story */}
                 <section className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-20 md:grid-cols-2 md:gap-16 md:px-6 md:py-28">
                     <div className="relative aspect-[4/5] overflow-hidden rounded-card">
@@ -103,47 +252,18 @@ export default async function Home() {
                     <div>
                         <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-gold">Our Story</p>
                         <h2 className="mt-3 text-3xl font-extrabold leading-tight tracking-tight text-main-text md:text-5xl">
-                            The taste of home, stretched by hand.
+                            Made by hand. Made to share.
                         </h2>
                         <p className="mt-5 text-base leading-relaxed text-muted-text md:text-lg">
                             Every feteer starts as a ball of dough, stretched thin by hand, folded with care and baked until golden and flaky.
-                            Alongside it you&apos;ll find the Egyptian home dishes, grills and classics we grew up with.
+                            Every dish on our menu is cooked the way it&apos;s done in Egyptian homes: generous, comforting and full of flavour.
                         </p>
-                        <p className="mt-4 text-base leading-relaxed text-muted-text md:text-lg">{siteConfig.tagline}.</p>
+                        <p className="mt-4 text-base leading-relaxed text-muted-text md:text-lg">
+                            Whether it&apos;s your first taste of Egyptian food or a taste of home, there&apos;s a seat for you at our table.
+                        </p>
                         <Link href="/about" className="mt-8 inline-flex items-center gap-2 font-bold text-accent-gold hover:text-accent-gold-hover">
                             More about us <ArrowForward fontSize="small" />
                         </Link>
-                    </div>
-                </section>
-
-                {/* Signature dishes */}
-                <section className="border-y border-border bg-surface/40">
-                    <div className="mx-auto max-w-6xl px-4 py-20 md:px-6 md:py-28">
-                        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-[0.22em] text-accent-gold">On The Menu</p>
-                                <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-main-text md:text-5xl">Egyptian favourites</h2>
-                            </div>
-                            <Link href="/menu" className="inline-flex items-center gap-2 font-bold text-accent-gold hover:text-accent-gold-hover">
-                                See the full menu <ArrowForward fontSize="small" />
-                            </Link>
-                        </div>
-                        <div className="mt-10 grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-5">
-                            {signatureDishes.map((dish) => (
-                                <Link
-                                    key={dish.title}
-                                    href="/menu"
-                                    className="group relative aspect-[3/4] overflow-hidden rounded-card active:scale-[0.98] transition-transform"
-                                >
-                                    <Image src={dish.image} alt={dish.title} fill sizes="(min-width: 768px) 33vw, 50vw" className="object-cover transition-transform duration-500 md:group-hover:scale-105" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-                                    <div className="absolute inset-x-0 bottom-0 p-4 md:p-6">
-                                        <h3 className="text-lg font-extrabold text-main-text md:text-2xl">{dish.title}</h3>
-                                        <p className="mt-1 text-xs leading-snug text-main-text/75 md:text-sm">{dish.note}</p>
-                                    </div>
-                                </Link>
-                            ))}
-                        </div>
                     </div>
                 </section>
 

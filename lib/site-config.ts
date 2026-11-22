@@ -9,6 +9,13 @@ export const siteConfig = {
     description:
         "Egyptian restaurant in Streetsville, Mississauga: hand-stretched feteer, Egyptian home dishes, grills and catering.",
 
+    // New-guest offer shown on ad landing pages (owner: keep the drink unspecified)
+    newGuestOffer: {
+        title: "Your first hot drink is on us",
+        text: "New to Elfatatry? Show this page when you order and enjoy a complimentary hot drink after your meal.",
+        terms: "Dine-in, one per guest, for first-time visitors.",
+    },
+
     // Set to true when online ordering (Phase 2) goes live.
     orderingEnabled: false,
 

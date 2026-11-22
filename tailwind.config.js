@@ -1,3 +1,6 @@
+// Lets opacity modifiers (bg-background/90, text-main-text/80...) work with the CSS-variable colour tokens
+const withAlpha = (v) => `color-mix(in srgb, var(${v}) calc(<alpha-value> * 100%), transparent)`;
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
     content: [
@@ -7,14 +10,14 @@ module.exports = {
     theme: {
         extend: {
             colors: {
-                background: "var(--background)",
-                surface: "var(--surface)",
-                "surface-elevated": "var(--surface-elevated)",
-                border: "var(--border)",
-                "main-text": "var(--text-main)",
-                "muted-text": "var(--text-muted)",
-                "accent-gold": "var(--accent-gold)",
-                "accent-gold-hover": "var(--accent-gold-hover)",
+                background: withAlpha("--background"),
+                surface: withAlpha("--surface"),
+                "surface-elevated": withAlpha("--surface-elevated"),
+                border: withAlpha("--border"),
+                "main-text": withAlpha("--text-main"),
+                "muted-text": withAlpha("--text-muted"),
+                "accent-gold": withAlpha("--accent-gold"),
+                "accent-gold-hover": withAlpha("--accent-gold-hover"),
             },
             borderRadius: {
                 card: "var(--radius-card)",
@@ -22,6 +25,7 @@ module.exports = {
             },
             fontFamily: {
                 sans: ['var(--font-jakarta)', 'sans-serif'],
+                arabic: ['var(--font-cairo)', 'sans-serif'],
             },
             animation: {
                 'fade-in-up': 'fadeInUp 0.8s ease-out forwards',

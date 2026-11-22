@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Cairo, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { siteConfig } from "@/lib/site-config";
 
@@ -7,6 +7,14 @@ const jakarta = Plus_Jakarta_Sans({
     subsets: ["latin"],
     display: "swap",
     variable: "--font-jakarta",
+});
+
+// Arabic dish names (brand font for Arabic)
+const cairo = Cairo({
+    subsets: ["arabic"],
+    weight: ["600", "700"],
+    display: "swap",
+    variable: "--font-cairo",
 });
 
 export const metadata: Metadata = {
@@ -59,7 +67,7 @@ export default function RootLayout({
     };
 
     return (
-        <html lang="en" className={jakarta.variable}>
+        <html lang="en" className={`${jakarta.variable} ${cairo.variable}`}>
             <head>
                 <script
                     type="application/ld+json"
