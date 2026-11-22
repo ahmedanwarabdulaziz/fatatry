@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
+import { siteConfig } from "@/lib/site-config";
 
 const jakarta = Plus_Jakarta_Sans({
     subsets: ["latin"],
@@ -9,9 +10,16 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-    title: "Elfatatry | Authentic Egyptian Taste",
-    description: "Crafting traditional feteer with a modern touch.",
+    title: "Elfatatry | Egyptian Feteer & Home Cooking in Mississauga",
+    description: siteConfig.description,
     manifest: "/manifest.json",
+    openGraph: {
+        title: "Elfatatry | Egyptian Feteer & Home Cooking",
+        description: siteConfig.description,
+        images: ["/images/site/hero.webp"],
+        type: "website",
+        locale: "en_CA",
+    },
 };
 
 export const viewport: Viewport = {
@@ -27,9 +35,27 @@ export default function RootLayout({
         '@context': 'https://schema.org',
         '@type': 'Restaurant',
         name: 'Elfatatry',
-        description: 'Authentic Egyptian Taste. Crafting traditional feteer with a modern touch.',
+        description: siteConfig.description,
         servesCuisine: 'Egyptian',
-        hasMenu: '/menu'
+        url: 'https://elfatatry.com',
+        hasMenu: 'https://elfatatry.com/menu',
+        image: 'https://elfatatry.com/images/site/hero.webp',
+        telephone: `+1 ${siteConfig.phone}`,
+        address: {
+            '@type': 'PostalAddress',
+            streetAddress: siteConfig.address.street,
+            addressLocality: siteConfig.address.city,
+            addressRegion: siteConfig.address.province,
+            postalCode: siteConfig.address.postalCode,
+            addressCountry: siteConfig.address.country,
+        },
+        geo: { '@type': 'GeoCoordinates', latitude: siteConfig.geo.lat, longitude: siteConfig.geo.lng },
+        openingHoursSpecification: siteConfig.openingHoursSpec.map((h) => ({
+            '@type': 'OpeningHoursSpecification',
+            dayOfWeek: h.days,
+            opens: h.opens,
+            closes: h.closes,
+        })),
     };
 
     return (

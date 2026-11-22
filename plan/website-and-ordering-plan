@@ -1,0 +1,66 @@
+Elfatatry Main Website And Online Ordering Plan
+
+Goal
+Turn the menu-only site into Elfatatry's main business website, with online ordering for pickup and delivery.
+Orders are paid and sent into Clover; delivery orders are dispatched to Uber Direct couriers.
+
+Fixed Decisions
+- Location: Mississauga, Ontario, Canada. Currency is CAD, shown as "$".
+- Tax: Ontario HST 13%. Clover's tax setup is the source of truth; the website shows the same tax Clover charges.
+- Delivery: Uber Direct (Uber couriers deliver orders placed on our website). We are NOT listing on the Uber Eats marketplace app for now.
+- Fulfilment at launch: pickup AND delivery.
+- /menu keeps its URL and current design (QR codes keep working).
+- Brand: brand.json in D:\Res\Content Studio\clients\elfatatry\brand. Dark background, copper/gold accents, Plus Jakarta Sans (English), Cairo (Arabic, later).
+- Photos: real photos only (shoot-pro, team, events). No AI-generated food photos on the website.
+
+Open Items (need the owner)
+- Clover: check plan, whether Clover eCommerce (online payments) is enabled, and create API credentials. Do this together in the Clover dashboard.
+- Uber Direct: create an Uber Direct business account (direct.uber.com) and get API credentials.
+- Real business details: address, phone, email, opening hours, social links, about-us story.
+  Placeholders live in lib/site-config.ts until confirmed.
+
+Site Structure
+- /            Home: hero, order + menu actions, story, signature dishes, catering, visit us (map, hours, contact).
+- /menu        Unchanged QR menu.
+- /order       Online ordering (Phase 2). Until then, a "coming soon" page with call + menu actions.
+- /catering    Catering services, how it works, inquiry by phone/email (form in Phase 4).
+- /about       Story, the wood-fired oven, the team.
+- /contact     Address, map, hours, phone, email.
+- /admin/...   Existing admin; Phase 2 adds /admin/orders.
+Shared header (logo, nav, Order button) and footer (hours, contact, links) on all public pages except /menu.
+
+Phase 1: Main Website Structure And Homepage
+- lib/site-config.ts holds business name, address, phone, email, hours, socials (placeholders marked TODO).
+- Shared SiteHeader and SiteFooter components (mobile menu included).
+- New homepage, plus /about, /catering, /contact, /order (coming soon).
+- Optimized WebP photos in public/images/site (resized from the pro shoot).
+- Metadata per page, Restaurant JSON-LD using site-config (only confirmed fields), manifest start_url stays /menu.
+- Acceptance: looks professional on phone and desktop; /menu unchanged; no broken links.
+
+Phase 2: Online Ordering, Pickup (Clover)
+- Menu data for ordering: Clover is the source of truth for items, prices, modifiers and availability.
+  Firebase keeps photos and descriptions. Each Firebase item stores its Clover item ID (admin mapping screen).
+- Cart (client state, persisted per device), item options/modifiers, special instructions.
+- Checkout: customer name, phone, email, pickup time (ASAP or scheduled within opening hours).
+- Payment: Clover eCommerce hosted checkout or Clover iframe tokenization (card data never touches our server).
+- On payment success: create the order in Clover (atomic order API) so it prints/shows in the kitchen.
+- Store order in Firebase (orders collection) with status; confirmation page /order/[id]; email/SMS receipt.
+- Webhooks from Clover update order status. /admin/orders dashboard with live orders.
+- Open/closed logic from opening hours; disable ordering when closed or when the owner pauses online orders.
+
+Phase 3: Delivery (Uber Direct)
+- Address entry with autocomplete; Uber Direct delivery quote (fee + ETA) before payment.
+- Delivery radius / minimum order rules set in admin.
+- After payment and Clover order creation: create Uber Direct delivery with pickup ready time.
+- Webhooks for courier status; tracking link on /order/[id].
+- Handle failures: quote expired, no courier available, cancellation/refund rules.
+
+Phase 4: Catering And Growth
+- Catering inquiry form (date, guests, budget, items) to email + admin; optional catering pre-orders with deposit.
+- Arabic language version (next-intl already installed), SEO pages, Google Business Profile link.
+- Optional: loyalty, promo codes, reorder from history.
+
+Technical Notes
+- Secrets (Clover, Uber Direct) only in server env vars; all API calls from server routes.
+- Use sandbox accounts for Clover and Uber Direct during development.
+- Run before each deploy: node_modules\.bin\tsc.cmd --noEmit, eslint, npm.cmd run build.
