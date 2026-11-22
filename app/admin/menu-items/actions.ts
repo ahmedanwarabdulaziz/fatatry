@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-auth';
+
 import { adminDb } from '@/lib/firebase-admin';
 import { uploadFileToR2 } from '@/lib/storage-utils';
 import { revalidatePath } from 'next/cache';
@@ -35,6 +37,9 @@ export interface MenuItem {
     sizes?: MenuItemSize[];
     addons?: MenuItemAddon[];
     order: number;
+    // Clover links (managed on /admin/clover; never touched by saveMenuItem)
+    cloverItemId?: string;
+    cloverSizeItemIds?: Record<string, string>; // size name -> Clover item id
 }
 
 const COLLECTION = 'menu_items';
@@ -45,6 +50,7 @@ export async function getMenuItems(): Promise<MenuItem[]> {
 }
 
 export async function saveMenuItem(formData: FormData) {
+    await requireAdmin();
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const categoryId = formData.get('categoryId') as string;
@@ -141,11 +147,13 @@ export async function saveMenuItem(formData: FormData) {
 }
 
 export async function deleteMenuItem(id: string) {
+    await requireAdmin();
     await adminDb.collection(COLLECTION).doc(id).delete();
     revalidatePath('/admin/menu-items');
 }
 
 export async function reorderMenuItems(items: { id: string, order: number }[]) {
+    await requireAdmin();
     const batch = adminDb.batch();
     items.forEach(({ id, order }) => {
         const ref = adminDb.collection(COLLECTION).doc(id);

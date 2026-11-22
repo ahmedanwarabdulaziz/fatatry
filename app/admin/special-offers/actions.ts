@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-auth';
+
 import { adminDb } from '@/lib/firebase-admin';
 import { uploadFileToR2 } from '@/lib/storage-utils';
 import { revalidatePath } from 'next/cache';
@@ -38,6 +40,7 @@ export async function getActiveOffers(limit: number = 3): Promise<SpecialOffer[]
 }
 
 export async function saveSpecialOffer(formData: FormData) {
+    await requireAdmin();
     const id = formData.get('id') as string;
     const headline = formData.get('headline') as string;
     const text = formData.get('text') as string;
@@ -83,12 +86,14 @@ export async function saveSpecialOffer(formData: FormData) {
 }
 
 export async function deleteSpecialOffer(id: string) {
+    await requireAdmin();
     await adminDb.collection(COLLECTION).doc(id).delete();
     revalidatePath('/admin/special-offers');
     revalidatePath('/');
 }
 
 export async function reorderOffers(items: { id: string, order: number }[]) {
+    await requireAdmin();
     const batch = adminDb.batch();
     items.forEach(({ id, order }) => {
         const ref = adminDb.collection(COLLECTION).doc(id);

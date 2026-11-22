@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-auth';
+
 import { adminDb } from '@/lib/firebase-admin';
 import { uploadFileToR2 } from '@/lib/storage-utils';
 import { revalidatePath } from 'next/cache';
@@ -23,6 +25,7 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function saveCategory(formData: FormData) {
+    await requireAdmin();
     const id = formData.get('id') as string;
     const name = formData.get('name') as string;
     const description = formData.get('description') as string;
@@ -80,11 +83,13 @@ export async function saveCategory(formData: FormData) {
 }
 
 export async function deleteCategory(id: string) {
+    await requireAdmin();
     await adminDb.collection(COLLECTION).doc(id).delete();
     revalidatePath('/admin/categories');
 }
 
 export async function reorderCategories(items: { id: string, order: number }[]) {
+    await requireAdmin();
     const batch = adminDb.batch();
 
     items.forEach(({ id, order }) => {

@@ -1,5 +1,7 @@
 'use server';
 
+import { requireAdmin } from '@/lib/admin-auth';
+
 import { adminDb } from '@/lib/firebase-admin';
 import { uploadFileToR2 } from '@/lib/storage-utils';
 import { revalidatePath } from 'next/cache';
@@ -31,6 +33,7 @@ export async function getHomepageSettings(): Promise<HomepageSettings | null> {
 }
 
 export async function saveHomepageSettings(formData: FormData) {
+    await requireAdmin();
     const topAdImageFile = formData.get('topAdImageFile') as File | null;
     const middleAdImageFile = formData.get('middleAdImageFile') as File | null;
     const bottomAdImageFile = formData.get('bottomAdImageFile') as File | null;

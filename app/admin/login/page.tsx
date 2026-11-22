@@ -1,19 +1,29 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TextField, Button, Box, Typography, Container, Paper } from '@mui/material';
+import { TextField, Button, Box, Typography, Container, Paper, Alert } from '@mui/material';
+import { loginAdmin } from './actions';
 
 export default function AdminLogin() {
     const [password, setPassword] = useState('');
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
-    const handleLogin = () => {
-        // Hardcoded password as requested: 5550555
-        if (password === '5550555') {
-            router.push('/admin/dashboard');
-        } else {
-            alert('Invalid Password');
+    const handleLogin = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        setLoading(true);
+        setError(null);
+        const result = await loginAdmin(password);
+        setLoading(false);
+        if (!result.ok) {
+            setError(result.error || 'Invalid password');
+            return;
         }
+        // Only allow redirects back into the admin area
+        const next = new URLSearchParams(window.location.search).get('next');
+        router.replace(next && next.startsWith('/admin') ? next : '/admin/dashboard');
+        router.refresh();
     };
 
     return (
@@ -22,7 +32,8 @@ export default function AdminLogin() {
                 <Typography component="h1" variant="h5">
                     Admin Login
                 </Typography>
-                <Box component="form" noValidate sx={{ mt: 1, width: '100%' }}>
+                <Box component="form" noValidate onSubmit={handleLogin} sx={{ mt: 1, width: '100%' }}>
+                    {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
                     <TextField
                         margin="normal"
                         required
@@ -36,12 +47,13 @@ export default function AdminLogin() {
                         onChange={(e) => setPassword(e.target.value)}
                     />
                     <Button
+                        type="submit"
                         fullWidth
                         variant="contained"
                         sx={{ mt: 3, mb: 2 }}
-                        onClick={handleLogin}
+                        disabled={loading || !password}
                     >
-                        Sign In
+                        {loading ? 'Signing in…' : 'Sign In'}
                     </Button>
                 </Box>
             </Paper>

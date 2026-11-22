@@ -1,10 +1,13 @@
 'use client';
-import { Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, AppBar, Toolbar, Typography, CssBaseline } from '@mui/material';
+import { Button, Box, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, AppBar, Toolbar, Typography, CssBaseline } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import CategoryIcon from '@mui/icons-material/Category';
 import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu'; // Alternative to MenuBook
 import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import SettingsIcon from '@mui/icons-material/Settings'; // More standard than SettingsSuggest
+import LinkIcon from '@mui/icons-material/Link';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { logoutAdmin } from './login/actions';
 import { useRouter, usePathname } from 'next/navigation';
 
 const drawerWidth = 240;
@@ -14,6 +17,7 @@ const menuItems = [
     { text: 'Categories', icon: <CategoryIcon />, path: '/admin/categories' },
     { text: 'Menu Items', icon: <RestaurantMenuIcon />, path: '/admin/menu-items' },
     { text: 'Special Offers', icon: <LocalOfferIcon />, path: '/admin/special-offers' },
+    { text: 'Clover Links', icon: <LinkIcon />, path: '/admin/clover' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
 ];
 
@@ -36,9 +40,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <CssBaseline />
             <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <Toolbar>
-                    <Typography variant="h6" noWrap component="div">
+                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                         Restaurant Admin
                     </Typography>
+                    <Button
+                        color="inherit"
+                        startIcon={<LogoutIcon />}
+                        onClick={async () => {
+                            await logoutAdmin();
+                            router.replace('/admin/login');
+                            router.refresh();
+                        }}
+                    >
+                        Log out
+                    </Button>
                 </Toolbar>
             </AppBar>
             <Drawer
