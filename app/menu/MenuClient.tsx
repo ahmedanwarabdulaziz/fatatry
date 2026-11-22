@@ -221,12 +221,22 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
     const [isSearchExpanded, setIsSearchExpanded] = useState(false);
     const deferredSearchTerm = useDeferredValue(searchTerm);
 
+    const tooltipShownRef = useRef(false);
+
+    // Show the catering tooltip once, after the customer has scrolled past the first items
     useEffect(() => {
-        if (settings?.enableCateringMenu !== false && settings?.enableCateringTooltip !== false) {
-            const timer = setTimeout(() => setShowTooltip(true), 500);
-            return () => clearTimeout(timer);
-        }
-    }, [settings]);
+        if (settings?.enableCateringMenu === false || settings?.enableCateringTooltip === false) return;
+        if (menuMode === 'catering' || tooltipShownRef.current) return;
+        const onScroll = () => {
+            if (window.scrollY > 400) {
+                tooltipShownRef.current = true;
+                setShowTooltip(true);
+                window.removeEventListener('scroll', onScroll);
+            }
+        };
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, [settings, menuMode]);
 
     const dismissTooltip = () => {
         setShowTooltip(false);
@@ -367,7 +377,7 @@ export default function MenuClient({ categories, items, settings }: MenuClientPr
                                             <span className="text-main-text text-sm font-bold leading-tight">
                                                 {settings?.cateringTooltipText || "🎉 New! Planning an event? Check out our Catering Menu!"}
                                             </span>
-                                            <button onClick={dismissTooltip} className="text-muted-text hover:text-main-text shrink-0 active:scale-95">
+                                            <button onClick={dismissTooltip} aria-label="Close" className="text-muted-text hover:text-main-text shrink-0 active:scale-95 p-2.5 -m-2.5">
                                                 <Clear fontSize="small" />
                                             </button>
                                         </div>
