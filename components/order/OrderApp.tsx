@@ -12,11 +12,12 @@ interface Props {
     pickup: PickupInfo;
     clover: { publicKey: string; merchantId: string; sdkUrl: string };
     previewMode: boolean;
+    delivery: { available: boolean; minOrderCents: number; taxFee: boolean };
 }
 
 const CART_KEY = 'elf-cart-v1';
 
-export default function OrderApp({ menu, pickup, clover, previewMode }: Props) {
+export default function OrderApp({ menu, pickup, clover, previewMode, delivery }: Props) {
     const [lines, setLines] = useState<CartLine[]>([]);
     const [loaded, setLoaded] = useState(false);
     const [active, setActive] = useState(menu.categories[0]?.id || '');
@@ -77,7 +78,7 @@ export default function OrderApp({ menu, pickup, clover, previewMode }: Props) {
             {/* Pickup banner */}
             <div className="border-b border-border bg-surface/60 px-4 py-3 text-center text-sm text-main-text/90">
                 {pickup.open ? (
-                    <>Pickup only · {pickup.asapLabel ? `ready in ${pickup.asapLabel}` : 'choose a pickup time later today'} · prices before tax</>
+                    <>{delivery.available ? 'Pickup or delivery' : 'Pickup only'} · {pickup.asapLabel ? `ready in ${pickup.asapLabel}` : 'choose a pickup time later today'} · prices before tax</>
                 ) : (
                     <span className="font-semibold text-accent-gold">{pickup.message}</span>
                 )}
@@ -144,6 +145,7 @@ export default function OrderApp({ menu, pickup, clover, previewMode }: Props) {
                     taxRate={menu.taxRate}
                     pickup={pickup}
                     clover={clover}
+                    delivery={delivery}
                     onChangeQty={(key, qty) => setLines((prev) => (qty < 1 ? prev.filter((l) => l.key !== key) : prev.map((l) => (l.key === key ? { ...l, qty: Math.min(20, qty) } : l))))}
                     onRemove={(key) => setLines((prev) => prev.filter((l) => l.key !== key))}
                     onClear={() => { setLines([]); setCartOpen(false); }}

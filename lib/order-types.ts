@@ -94,6 +94,26 @@ export interface PlaceOrderResult {
     ok: boolean;
     error?: string;
     orderId?: string;
+    feeChangedTo?: number; // delivery fee changed since the customer saw it (cents)
 }
 
 export const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+// ---- Delivery ----------------------------------------------------------------
+
+export interface DeliveryAddress {
+    street: string;
+    unit: string;
+    city: string;
+    postalCode: string;
+    notes: string;
+}
+
+export interface DeliveryQuoteResult {
+    ok: boolean;
+    error?: string;
+    feeCents?: number; // what the customer pays for delivery
+    etaMinutes?: number; // Uber's estimate from pickup to arrival
+}
+
+export type Fulfilment = 'pickup' | 'delivery';

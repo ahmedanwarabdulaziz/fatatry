@@ -61,6 +61,69 @@ Design (decided 2026-11-22 after reading Clover docs):
 - To verify while building (docs were ambiguous): modifier id placement in atomic orders, whether a clv_ token
   can be passed straight to /pay, whether online orders print automatically.
 
+Phase 3: Delivery (Uber Direct)  [DESIGN, waiting on Uber account]
+Facts from Uber's docs (read 2026-11-24):
+- Auth: POST https://auth.uber.com/oauth/v2/token (client_credentials, scope eats.deliveries); token valid 30 days, cache it.
+  Credentials (client_id, client_secret, customer_id) come from direct.uber.com > Developer tab.
+- Quote: POST https://api.uber.com/v1/customers/{customer_id}/delivery_quotes -> fee in cents, ETA, quote id valid 15 minutes.
+- Delivery: POST .../deliveries (quote_id, pickup/dropoff name+address+phone, manifest_items, pickup_ready_dt, tip, idempotency_key).
+  Response has a tracking_url to show the customer. Cancel is likely POST .../deliveries/{id}/cancel (to confirm).
+- Status updates by webhook (header x-uber-signature = HMAC-SHA256 of the raw body); retries only on 5xx/timeouts.
+- Test mode: new accounts start in test mode; "robo courier" simulates a courier; no real deliveries or charges.
+- NOT CONFIRMED in the docs: availability in Canada/Mississauga, CAD, radius, pricing, approval time. Account creation is
+  "available only in select regions", billing info + a store pilot with Uber are required for production.
+  => FIRST STEP: owner tries to open an account at direct.uber.com and reports what happens.
+Design:
+1. Checkout offers Pickup or Delivery. Delivery asks for street, unit, city, postal code, phone, drop-off notes.
+2. Server asks Uber for a quote (also proves the address is deliverable). Customer sees delivery fee + ETA. Quote is
+   re-requested when paying because quotes expire after 15 minutes.
+3. Order total = items + delivery fee (+ HST as advised by the accountant) + optional courier tip.
+4. Order is created in Clover and paid as for pickup; ONLY AFTER payment succeeds the Uber delivery is created
+   (pickup_ready_dt = now + prep time). If Uber creation fails after payment: retry, then alert staff in Admin > Orders
+   with a one-click refund path. Never dispatch a courier before payment.
+5. Webhooks update the order status; the confirmation page shows the Uber tracking link; Admin > Orders shows courier status.
+6. Admin settings: delivery on/off, radius, minimum order, delivery hours, free-delivery threshold, fee markup.
+Owner decisions still needed: radius, minimum order, who pays the fee, tip, HST on the delivery fee (accountant).
+Fallback if Uber Direct is not open in Canada for us: DoorDash Drive (white-label, available in Canada) with the same design.
+
+Phase 4).
+- /about       Story, the wood-fired oven, the team.
+- /contact     Address, map, hours, phone, email.
+- /admin/...   Existing admin; Phase 2 adds /admin/orders.
+Shared header (logo, nav, Order button) and footer (hours, contact, links) on all public pages except /menu.
+
+Phase 1: Main Website Structure And Homepage
+- lib/site-config.ts holds business name, address, phone, email, hours, socials (placeholders marked TODO).
+- Shared SiteHeader and SiteFooter components (mobile menu included).
+- New homepage, plus /about, /catering, /contact, /order (coming soon).
+- Optimized WebP photos in public/images/site (resized from the pro shoot).
+- Metadata per page, Restaurant JSON-LD using site-config (only confirmed fields), manifest start_url stays /menu.
+- Acceptance: looks professional on phone and desktop; /menu unchanged; no broken links.
+
+Phase 2: Online Ordering, Pickup (Clover)  [IN PROGRESS]
+Design (decided 2026-11-22 after reading Clover docs):
+- Clover Hosted Checkout is NOT used: it only takes free-text line items (no inventory items, no modifiers, no Clover tax).
+- Flow instead:
+  1. Customer builds a cart on our site from LINKED items only (Admin > Clover Links). Options come live from Clover modifier groups.
+  2. Server re-prices the cart from Clover (never trusts browser prices) and previews totals + 13% HST:
+     POST /v3/merchants/{mId}/atomic_order/checkouts
+  3. Card details are entered in Clover's hosted iframe fields (checkout.clover.com/sdk.js, locale en-CA).
+     The card never touches our server; we receive a one-time clv_ token.
+  4. Server creates the real order: POST /v3/merchants/{mId}/atomic_order/orders
+     (inventory item ids + modifiers + orderType "Online Pickup"), then pays it with the
+     Ecommerce API: POST https://scl.clover.com/v1/orders/{orderId}/pay (delete_order_on_failure).
+  5. Order is saved in Firebase (orders collection); customer sees /order/[id]; kitchen print via print_event if needed.
+- Credentials needed (server env only):
+  CLOVER_API_TOKEN with Orders READ + WRITE (currently read-only)
+  CLOVER_ECOMM_PUBLIC_KEY + CLOVER_ECOMM_PRIVATE_KEY ("Hosted iframe + API/SDK" ecommerce token)
+  (No Clover order type is used: owner chose not to add one. Pickup details travel in the order note. CLOVER_ORDER_TYPE_ID is optional.)
+- Safety: everything built and tested on a Clover SANDBOX test merchant first
+  (apisandbox.dev.clover.com / scl-sandbox.dev.clover.com / checkout.sandbox.dev.clover.com),
+  and the public site keeps ordering switched off (ORDERING_ENABLED) until the owner approves.
+- Also: open/closed from opening hours + "pause online orders" switch; /admin/orders; confirmation email/SMS.
+- To verify while building (docs were ambiguous): modifier id placement in atomic orders, whether a clv_ token
+  can be passed straight to /pay, whether online orders print automatically.
+
 Phase 3: Delivery (Uber Direct)
 - Address entry with autocomplete; Uber Direct delivery quote (fee + ETA) before payment.
 - Delivery radius / minimum order rules set in admin.

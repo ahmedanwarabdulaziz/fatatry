@@ -84,6 +84,7 @@ export interface CloverCatalog {
     items: Map<string, CloverCatalogItem>;
     groups: Map<string, CloverGroupFull>;
     taxRate: number; // default tax rate as a fraction, e.g. 0.13
+    taxRateId: string | null; // id of that default tax rate (used for custom lines such as the delivery fee)
     orderTypeId: string | null;
 }
 
@@ -124,6 +125,7 @@ export async function getCloverCatalog(force = false): Promise<CloverCatalog> {
     const rates = await cloverGet<{ elements: any[] }>(`/tax_rates`);
     const def = rates.elements.find((r) => r.isDefault) || rates.elements.find((r) => r.rate > 0);
     const taxRate = def ? def.rate / 10_000_000 : 0.13;
+    const taxRateId: string | null = def ? def.id : null;
 
     let orderTypeId: string | null = process.env.CLOVER_ORDER_TYPE_ID || null;
     if (!orderTypeId) {
@@ -135,7 +137,7 @@ export async function getCloverCatalog(force = false): Promise<CloverCatalog> {
         }
     }
 
-    const data = { items, groups, taxRate, orderTypeId };
+    const data = { items, groups, taxRate, taxRateId, orderTypeId };
     catalogCache = { at: Date.now(), data };
     return data;
 }
@@ -162,8 +164,19 @@ export interface CloverLineInput {
 }
 
 /** Creates the order in Clover. Clover line items are one per unit, so quantities are expanded. */
-export async function createCloverOrder(lines: (CloverLineInput & { qty: number })[], orderTypeId: string | null, note: string) {
-    const lineItems = lines.flatMap((l) =>
+export interface CloverExtraLine {
+    name: string;
+    priceCents: number;
+    taxRateId?: string | null; // set to charge tax on this line
+}
+
+export async function createCloverOrder(
+    lines: (CloverLineInput & { qty: number })[],
+    orderTypeId: string | null,
+    note: string,
+    extraLines: CloverExtraLine[] = []
+) {
+    const lineItems: any[] = lines.flatMap((l) =>
         Array.from({ length: l.qty }, () => ({
             item: { id: l.itemId },
             ...(l.modifierIds.length ? { modifications: l.modifierIds.map((id) => ({ modifier: { id } })) } : {}),
@@ -173,6 +186,10 @@ export async function createCloverOrder(lines: (CloverLineInput & { qty: number 
             refunded: false,
         }))
     );
+    // Custom lines (e.g. the delivery fee) are not inventory items: name + price only. Verified by the total check after creation.
+    for (const x of extraLines) {
+        lineItems.push({ name: x.name, price: x.priceCents, ...(x.taxRateId ? { taxRates: [{ id: x.taxRateId }] } : {}), printed: false, exchanged: false, refunded: false });
+    }
     const order = await cloverSend<{ id: string; total?: number; currency?: string }>("POST", "/atomic_order/orders", {
         // The order type is optional: when none exists the pickup details are carried in the order note
         orderCart: { lineItems, ...(orderTypeId ? { orderType: { id: orderTypeId } } : {}), note },

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Alert, Box, Button, Chip, CircularProgress, FormControlLabel, MenuItem, Paper, Select, Stack, Switch, Typography } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import { getOrdersData, setFulfilment, setOrderingPaused, AdminOrder } from './actions';
+import { getOrdersData, retryDelivery, setFulfilment, setOrderingPaused, AdminOrder } from './actions';
 
 const money = (c: number) => `$${(c / 100).toFixed(2)}`;
 const STAGES = ['new', 'preparing', 'ready', 'picked-up', 'cancelled'] as const;
@@ -61,9 +61,17 @@ export default function AdminOrdersPage() {
                                     <Typography variant="h6" fontWeight={700}>{o.orderCode}</Typography>
                                     <Chip size="small" color={o.status === 'paid' ? 'success' : o.status === 'failed' ? 'error' : 'default'} label={o.status} />
                                     {o.placedByAdmin && <Chip size="small" variant="outlined" label="test / admin" />}
+                                    {o.delivery && <Chip size="small" color="info" label="DELIVERY" />}
                                     <Typography color="text.secondary" variant="body2">{new Date(o.createdAt).toLocaleString('en-CA', { timeZone: 'America/Toronto' })}</Typography>
                                 </Stack>
-                                <Typography sx={{ mt: 0.5 }}><b>Pickup: {o.pickupLabel}</b> · {o.customer.name} · {o.customer.phone}</Typography>
+                                <Typography sx={{ mt: 0.5 }}><b>{o.delivery ? 'Ready for courier: ' : 'Pickup: '}{o.pickupLabel}</b> · {o.customer.name} · {o.customer.phone}</Typography>
+                                {o.delivery && (
+                                    <Typography sx={{ mt: 0.5 }} color="text.secondary">
+                                        To: {o.delivery.address} · Uber status: <b>{o.delivery.status || 'unknown'}</b>
+                                        {o.delivery.courier ? ' · Courier: ' + o.delivery.courier : ''}
+                                        {o.delivery.trackingUrl && <> · <a href={o.delivery.trackingUrl} target="_blank" rel="noopener noreferrer">Track</a></>}
+                                    </Typography>
+                                )}
                             </Box>
                             <Stack direction="row" spacing={2} alignItems="center">
                                 <Typography variant="h6" fontWeight={700}>{money(o.totalCents)}</Typography>
@@ -84,6 +92,14 @@ export default function AdminOrdersPage() {
                             ))}
                         </Box>
                         {o.failure && <Alert severity="error" sx={{ mt: 1 }}>{o.failure}</Alert>}
+                        {o.delivery && (o.delivery.canRetry || o.delivery.error) && (
+                            <Alert severity="error" sx={{ mt: 1 }}
+                                action={o.delivery.canRetry ? (
+                                    <Button color="inherit" size="small" onClick={async () => { const r = await retryDelivery(o.id); if (!r.ok) alert(r.error); await load(); }}>Book courier again</Button>
+                                ) : undefined}>
+                                The customer has PAID but no Uber courier is booked. Book again, or call the customer.{o.delivery.error ? ' Last error: ' + o.delivery.error : ''}
+                            </Alert>
+                        )}
                         {o.printError && <Alert severity="warning" sx={{ mt: 1 }}>Kitchen print failed: {o.printError}</Alert>}
                         {o.followUpError && <Alert severity="warning" sx={{ mt: 1 }}>Paid, but a follow-up step failed: {o.followUpError}</Alert>}
                     </Paper>

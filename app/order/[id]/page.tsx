@@ -21,6 +21,20 @@ export default async function OrderConfirmation({ params }: { params: { id: stri
     const first = String(o.customer?.name || "").split(" ")[0];
     const lines: { name: string; variant: string; qty: number; unitCents: number; options: string[]; note: string }[] = o.lines || [];
     const total: number = o.totalCents ?? o.estimatedTotalCents;
+    const isDelivery = o.fulfilmentType === "delivery" && o.delivery;
+    const d = o.delivery || {};
+    const addr = d.address || {};
+    const addressLine = [addr.street, addr.unit ? `Unit ${addr.unit}` : "", addr.city, addr.postalCode].filter(Boolean).join(", ");
+    const statusText: Record<string, string> = {
+        pending: "Finding a courier",
+        pickup: "Courier on the way to pick up your order",
+        pickup_complete: "Courier has your order",
+        dropoff: "Courier is arriving",
+        delivered: "Delivered",
+        canceled: "Delivery cancelled, we will contact you",
+        returned: "Order returned, we will contact you",
+        "booking-failed": "We are arranging your courier and will call you if there is a delay",
+    };
 
     return (
         <>
@@ -36,8 +50,18 @@ export default async function OrderConfirmation({ params }: { params: { id: stri
                     <div className="mt-8 rounded-card border border-border bg-surface p-6">
                         <dl className="space-y-3 text-sm">
                             <div className="flex justify-between"><dt className="text-muted-text">Order number</dt><dd className="font-extrabold text-main-text">{o.orderCode}</dd></div>
-                            <div className="flex justify-between"><dt className="text-muted-text">Pickup</dt><dd className="font-bold text-accent-gold">{o.pickup?.label}</dd></div>
-                            <div className="flex justify-between gap-6"><dt className="text-muted-text">Where</dt><dd className="text-right text-main-text">{fullAddress}</dd></div>
+                            {isDelivery ? (
+                                <>
+                                    <div className="flex justify-between"><dt className="text-muted-text">Ready for courier</dt><dd className="font-bold text-accent-gold">{o.pickup?.label}</dd></div>
+                                    <div className="flex justify-between gap-6"><dt className="text-muted-text">Delivering to</dt><dd className="text-right text-main-text">{addressLine}</dd></div>
+                                    {d.status && <div className="flex justify-between gap-6"><dt className="text-muted-text">Delivery status</dt><dd className="text-right text-main-text">{statusText[d.status] || d.status}</dd></div>}
+                                </>
+                            ) : (
+                                <>
+                                    <div className="flex justify-between"><dt className="text-muted-text">Pickup</dt><dd className="font-bold text-accent-gold">{o.pickup?.label}</dd></div>
+                                    <div className="flex justify-between gap-6"><dt className="text-muted-text">Where</dt><dd className="text-right text-main-text">{fullAddress}</dd></div>
+                                </>
+                            )}
                         </dl>
                         <hr className="my-5 border-border" />
                         <ul className="space-y-3">
@@ -52,13 +76,27 @@ export default async function OrderConfirmation({ params }: { params: { id: stri
                                 </li>
                             ))}
                         </ul>
+                        {isDelivery && d.customerFeeCents > 0 && (
+                            <div className="mt-3 flex justify-between text-sm text-main-text"><span>Delivery fee</span><span>{formatCents(d.customerFeeCents)}</span></div>
+                        )}
                         <hr className="my-5 border-border" />
                         <div className="flex justify-between text-base font-extrabold text-main-text"><span>Total paid (incl. HST)</span><span>{formatCents(total)}</span></div>
                     </div>
 
-                    <p className="mt-6 text-center text-sm text-muted-text">
-                        Please come to the counter and give your name. Need to change something? Call us right away.
-                    </p>
+                    {isDelivery ? (
+                        <div className="mt-6 text-center">
+                            {d.trackingUrl && (
+                                <a href={d.trackingUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center justify-center rounded-full bg-accent-gold px-8 font-bold text-background">
+                                    Track your delivery
+                                </a>
+                            )}
+                            <p className="mt-4 text-sm text-muted-text">An Uber courier will bring your order to your door. Need to change something? Call us right away.</p>
+                        </div>
+                    ) : (
+                        <p className="mt-6 text-center text-sm text-muted-text">
+                            Please come to the counter and give your name. Need to change something? Call us right away.
+                        </p>
+                    )}
                     <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
                         <a href={phoneHref} className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-accent-gold px-6 font-bold text-background"><Phone fontSize="small" /> {siteConfig.phone}</a>
                         <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-border px-6 font-bold text-main-text"><Place fontSize="small" /> Directions</a>
