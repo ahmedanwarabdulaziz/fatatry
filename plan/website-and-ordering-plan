@@ -37,16 +37,29 @@ Phase 1: Main Website Structure And Homepage
 - Metadata per page, Restaurant JSON-LD using site-config (only confirmed fields), manifest start_url stays /menu.
 - Acceptance: looks professional on phone and desktop; /menu unchanged; no broken links.
 
-Phase 2: Online Ordering, Pickup (Clover)
-- Menu data for ordering: Clover is the source of truth for items, prices, modifiers and availability.
-  Firebase keeps photos and descriptions. Each Firebase item stores its Clover item ID (admin mapping screen).
-- Cart (client state, persisted per device), item options/modifiers, special instructions.
-- Checkout: customer name, phone, email, pickup time (ASAP or scheduled within opening hours).
-- Payment: Clover eCommerce hosted checkout or Clover iframe tokenization (card data never touches our server).
-- On payment success: create the order in Clover (atomic order API) so it prints/shows in the kitchen.
-- Store order in Firebase (orders collection) with status; confirmation page /order/[id]; email/SMS receipt.
-- Webhooks from Clover update order status. /admin/orders dashboard with live orders.
-- Open/closed logic from opening hours; disable ordering when closed or when the owner pauses online orders.
+Phase 2: Online Ordering, Pickup (Clover)  [IN PROGRESS]
+Design (decided 2026-11-22 after reading Clover docs):
+- Clover Hosted Checkout is NOT used: it only takes free-text line items (no inventory items, no modifiers, no Clover tax).
+- Flow instead:
+  1. Customer builds a cart on our site from LINKED items only (Admin > Clover Links). Options come live from Clover modifier groups.
+  2. Server re-prices the cart from Clover (never trusts browser prices) and previews totals + 13% HST:
+     POST /v3/merchants/{mId}/atomic_order/checkouts
+  3. Card details are entered in Clover's hosted iframe fields (checkout.clover.com/sdk.js, locale en-CA).
+     The card never touches our server; we receive a one-time clv_ token.
+  4. Server creates the real order: POST /v3/merchants/{mId}/atomic_order/orders
+     (inventory item ids + modifiers + orderType "Online Pickup"), then pays it with the
+     Ecommerce API: POST https://scl.clover.com/v1/orders/{orderId}/pay (delete_order_on_failure).
+  5. Order is saved in Firebase (orders collection); customer sees /order/[id]; kitchen print via print_event if needed.
+- Credentials needed (server env only):
+  CLOVER_API_TOKEN with Orders READ + WRITE (currently read-only)
+  CLOVER_ECOMM_PUBLIC_KEY + CLOVER_ECOMM_PRIVATE_KEY ("Hosted iframe + API/SDK" ecommerce token)
+  (No Clover order type is used: owner chose not to add one. Pickup details travel in the order note. CLOVER_ORDER_TYPE_ID is optional.)
+- Safety: everything built and tested on a Clover SANDBOX test merchant first
+  (apisandbox.dev.clover.com / scl-sandbox.dev.clover.com / checkout.sandbox.dev.clover.com),
+  and the public site keeps ordering switched off (ORDERING_ENABLED) until the owner approves.
+- Also: open/closed from opening hours + "pause online orders" switch; /admin/orders; confirmation email/SMS.
+- To verify while building (docs were ambiguous): modifier id placement in atomic orders, whether a clv_ token
+  can be passed straight to /pay, whether online orders print automatically.
 
 Phase 3: Delivery (Uber Direct)
 - Address entry with autocomplete; Uber Direct delivery quote (fee + ETA) before payment.

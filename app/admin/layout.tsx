@@ -7,6 +7,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import SettingsIcon from '@mui/icons-material/Settings'; // More standard than SettingsSuggest
 import LinkIcon from '@mui/icons-material/Link';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { logoutAdmin } from './login/actions';
 import { useRouter, usePathname } from 'next/navigation';
 
@@ -17,6 +18,7 @@ const menuItems = [
     { text: 'Categories', icon: <CategoryIcon />, path: '/admin/categories' },
     { text: 'Menu Items', icon: <RestaurantMenuIcon />, path: '/admin/menu-items' },
     { text: 'Special Offers', icon: <LocalOfferIcon />, path: '/admin/special-offers' },
+    { text: 'Online Orders', icon: <ReceiptLongIcon />, path: '/admin/orders' },
     { text: 'Clover Links', icon: <LinkIcon />, path: '/admin/clover' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/admin/settings' },
 ];

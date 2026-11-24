@@ -1,39 +1,48 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowForward, Phone } from "@mui/icons-material";
 import SiteHeader from "@/components/site/SiteHeader";
 import SiteFooter from "@/components/site/SiteFooter";
-import PageHero from "@/components/site/PageHero";
-import { phoneHref, siteConfig } from "@/lib/site-config";
+import OrderApp from "@/components/order/OrderApp";
+import OrderUnavailable from "@/components/order/OrderUnavailable";
+import { getOrderMenu } from "@/lib/order-menu";
+import { getOrderingAccess } from "@/lib/ordering-status";
+import { cloverSdkUrl } from "@/lib/clover";
+import { getPickupInfo } from "@/lib/hours";
 
 export const metadata: Metadata = {
-    title: "Order Online | Elfatatry",
-    description: "Order Elfatatry for pickup or delivery in Mississauga.",
+    title: "Order Online for Pickup | Elfatatry",
+    description: "Order Elfatatry online for pickup in Streetsville, Mississauga.",
 };
 
-// Phase 2 replaces this page with the online ordering flow.
-export default function OrderPage() {
+// Always fresh: depends on opening hours, the pause switch and the signed-in admin
+export const dynamic = "force-dynamic";
+
+export default async function OrderPage() {
+    const access = await getOrderingAccess();
+
+    if (!access.publicLive && !access.admin) return <OrderUnavailable paused={access.paused} />;
+    if (access.missing.length) return <OrderUnavailable missing={access.admin ? access.missing : []} />;
+
+    let menu;
+    try {
+        menu = (await getOrderMenu()).menu;
+    } catch {
+        return <OrderUnavailable />;
+    }
+
     return (
         <>
-            <SiteHeader transparent />
-            <main className="bg-background">
-                <PageHero
-                    eyebrow="Order Online"
-                    title="Online ordering is coming soon."
-                    subtitle="Pickup and delivery, straight from our kitchen. Until then, give us a call and we'll have it ready."
-                    image="/images/site/dish-feteer.webp"
-                    imagePosition="center 40%"
+            <SiteHeader />
+            <main className="bg-background pt-16 md:pt-20">
+                <OrderApp
+                    menu={menu}
+                    pickup={getPickupInfo()}
+                    clover={{
+                        publicKey: process.env.CLOVER_ECOMM_PUBLIC_KEY || "",
+                        merchantId: process.env.CLOVER_MERCHANT_ID || "",
+                        sdkUrl: cloverSdkUrl(),
+                    }}
+                    previewMode={access.admin && !access.publicLive}
                 />
-                <section className="mx-auto max-w-6xl px-4 py-16 md:px-6 md:py-24">
-                    <div className="flex flex-col gap-3 sm:flex-row">
-                        <a href={phoneHref} className="inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent-gold px-8 font-bold text-background hover:bg-accent-gold-hover">
-                            <Phone fontSize="small" /> Call {siteConfig.phone}
-                        </a>
-                        <Link href="/menu" className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-border px-8 font-bold text-main-text hover:border-accent-gold hover:text-accent-gold">
-                            Browse the menu <ArrowForward fontSize="small" />
-                        </Link>
-                    </div>
-                </section>
             </main>
             <SiteFooter />
         </>
